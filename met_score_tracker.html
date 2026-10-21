@@ -142,6 +142,33 @@
     .flex-gap {
       display: flex;
       gap: 8px;
+      align-items: center;
+    }
+
+    .compact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px;
+      align-items: end;
+      margin-bottom: 8px;
+    }
+
+    .compact-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .compact-field label {
+      font-size: 11px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    .compact-field input {
+      margin-bottom: 0;
+      padding: 6px 4px;
+      font-size: 13px;
+      text-align: center;
     }
 
     .entry {
@@ -255,40 +282,37 @@
     
     <label for="presetSelect">Kies uit MET-Database:</label>
     <select id="presetSelect" onchange="selectPreset()">
-      <!-- Wordt dynamisch gevuld met Favorieten bovenaan -->
+      <!-- Wordt dynamisch gevuld -->
     </select>
 
-    <div style="text-align: right; margin-bottom: 10px;">
+    <div style="text-align: right; margin-bottom: 8px;">
       <button onclick="openDbModal()" class="btn-secondary btn-small">⚙️ Beheer MET-Lijst & Favorieten</button>
     </div>
 
     <label for="actName">Activiteit Naam</label>
     <input type="text" id="actName" placeholder="bijv. Wandelen, Lezen, Koken">
     
-    <div class="flex-gap">
-      <div style="flex: 1;">
-        <label for="startTime">Starttijd</label>
+    <!-- Compacte invoerrij voor Tijd, MET, Uren & Minuten -->
+    <div class="compact-row">
+      <div class="compact-field">
+        <label for="startTime">Tijd</label>
         <input type="time" id="startTime">
       </div>
-      <div style="flex: 1;">
-        <label for="metVal">MET-score</label>
+      <div class="compact-field">
+        <label for="metVal">MET</label>
         <input type="number" id="metVal" step="0.1" placeholder="2.5">
       </div>
-    </div>
-
-    <label>Duur activiteit</label>
-    <div class="flex-gap">
-      <div style="flex: 1;">
-        <input type="number" id="durHours" min="0" max="24" placeholder="0 uren" style="margin-bottom:4px;">
-        <span style="font-size:11px; color:#666;">Uren</span>
+      <div class="compact-field">
+        <label for="durHours">Uren</label>
+        <input type="number" id="durHours" min="0" max="24" placeholder="0u">
       </div>
-      <div style="flex: 1;">
-        <input type="number" id="durMins" min="0" max="59" placeholder="30 min" style="margin-bottom:4px;">
-        <span style="font-size:11px; color:#666;">Minuten</span>
+      <div class="compact-field">
+        <label for="durMins">Minuten</label>
+        <input type="number" id="durMins" min="0" max="59" placeholder="30m">
       </div>
     </div>
 
-    <div style="text-align: right; margin-top: 10px;">
+    <div style="text-align: right; margin-top: 6px;">
       <button onclick="addActivity()" class="btn-small">Activiteit Opslaan</button>
     </div>
   </div>
@@ -345,7 +369,6 @@
 </div>
 
 <script>
-  // Officiële MET-Database overgenomen uit de MET-methode meetinstructie
   const defaultPresets = [
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
@@ -401,7 +424,6 @@
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   
-  // Zet standaard starttijd op de huidige tijd (HH:MM)
   const now = new Date();
   document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
 
@@ -498,7 +520,7 @@
     const totalMinutes = (hrs * 60) + mins;
 
     if (!name || isNaN(met) || totalMinutes <= 0) {
-      alert('Vul a.u.b. een naam, MET-score en een geldige duur (uren/minuten) in.');
+      alert('Vul a.u.b. een naam, MET-score en een geldige duur in.');
       return;
     }
 
@@ -546,7 +568,6 @@
     });
 
     const list = document.getElementById('logList');
-    // Sorteer op starttijd
     const dayActs = trackerData.activities
       .filter(a => a.date === currentDate)
       .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
@@ -560,7 +581,6 @@
       dayActs.forEach(a => {
         total += a.points;
         
-        // Mooie duurnaamweergave (bijv. "1u 30m" of "45m")
         let durStr = "";
         if (a.hours && a.hours > 0) durStr += `${a.hours}u `;
         if (a.minutes && a.minutes > 0) durStr += `${a.minutes}m`;
@@ -702,7 +722,6 @@
     });
   }
 
-  /* Modal & Database Beheer */
   function openDbModal() {
     renderDbModalList();
     document.getElementById('dbModal').style.display = 'flex';
