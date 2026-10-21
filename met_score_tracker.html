@@ -103,6 +103,8 @@
       margin-bottom: 0;
       text-align: center;
       height: 36px;
+      background-color: #ffffff;
+      -webkit-appearance: none;
     }
 
     .energy-card {
@@ -167,10 +169,14 @@
       margin-bottom: 2px;
       white-space: nowrap;
     }
+    /* Zorg dat alle input velden in deze rijen exact even groot en wit zijn */
     .compact-field input {
       margin-bottom: 0;
-      padding: 8px 6px;
+      padding: 0 6px;
+      height: 38px;
       font-size: 14px;
+      background-color: #ffffff;
+      -webkit-appearance: none;
     }
     .text-center { text-align: center; }
     .text-left { text-align: left; }
@@ -437,7 +443,7 @@
   document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
 
   let historyChart = null;
-  let currentEditId = null; // Houdt bij of we in bewerk-modus zitten
+  let currentEditId = null;
 
   const energyMetaMap = {
     10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
@@ -537,7 +543,6 @@
     const points = (met * (totalMinutes / 60)).toFixed(1);
 
     if (currentEditId) {
-      // Bewerk-modus
       const index = trackerData.activities.findIndex(a => a.id === currentEditId);
       if (index !== -1) {
         trackerData.activities[index] = {
@@ -552,14 +557,12 @@
         };
       }
       
-      // Reset bewerk status
       currentEditId = null;
       const btn = document.getElementById('saveActBtn');
       btn.innerText = "Activiteit Opslaan";
       btn.style.backgroundColor = "var(--primary)";
 
     } else {
-      // Nieuwe activiteit toevoegen
       trackerData.activities.push({
         id: Date.now(),
         date: currentDate,
@@ -573,7 +576,6 @@
       });
     }
 
-    // Velden wissen na opslaan
     document.getElementById('actName').value = '';
     document.getElementById('metVal').value = '';
     document.getElementById('durHours').value = '';
@@ -587,20 +589,17 @@
     const act = trackerData.activities.find(a => a.id === id);
     if (!act) return;
 
-    // Vul formulier met bestaande data
     document.getElementById('actName').value = act.name;
     document.getElementById('metVal').value = act.met;
     document.getElementById('startTime').value = act.time;
     document.getElementById('durHours').value = act.hours || 0;
     document.getElementById('durMins').value = act.minutes || 0;
 
-    // Activeer bewerk-modus
     currentEditId = id;
     const btn = document.getElementById('saveActBtn');
     btn.innerText = "Activiteit Bijwerken";
     btn.style.backgroundColor = "var(--edit-color)";
     
-    // Scroll soepel omhoog naar het invulformulier
     document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -645,7 +644,6 @@
 
         const timeDisplay = a.time ? `<span style="color:#e67e22; font-weight:bold;">${a.time}</span> - ` : '';
 
-        // Het potlood (Bewerken) en de X (Verwijderen) naast elkaar
         html += `
           <div class="entry">
             <div>
