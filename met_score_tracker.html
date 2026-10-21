@@ -17,6 +17,7 @@
       --danger: #e74c3c;
       --thumb-ochtend: #2ecc71;
       --thumb-avond: #2ecc71;
+      --edit-color: #f39c12;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -145,7 +146,6 @@
       align-items: center;
     }
 
-    /* Nieuwe Grid Layouts voor invoer */
     .input-row-2 {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -281,7 +281,7 @@
   </div>
 
   <!-- MET Invoer & Database Snelkeuze -->
-  <div class="card">
+  <div class="card" id="inputCard">
     <h3>Activiteit Toevoegen</h3>
     
     <label for="presetSelect">Kies uit MET-Database:</label>
@@ -322,7 +322,7 @@
     </div>
 
     <div style="text-align: right; margin-top: 8px;">
-      <button onclick="addActivity()" class="btn-small">Activiteit Opslaan</button>
+      <button id="saveActBtn" onclick="addOrUpdateActivity()" class="btn-small">Activiteit Opslaan</button>
     </div>
   </div>
 
@@ -437,6 +437,7 @@
   document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
 
   let historyChart = null;
+  let currentEditId = null; // Houdt bij of we in bewerk-modus zitten
 
   const energyMetaMap = {
     10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
@@ -519,7 +520,7 @@
     alert(`Energieniveau opgeslagen voor ${currentDate}`);
   }
 
-  function addActivity() {
+  function addOrUpdateActivity() {
     const name = document.getElementById('actName').value;
     const startTime = document.getElementById('startTime').value || "00:00";
     const met = parseFloat(document.getElementById('metVal').value);
@@ -535,18 +536,44 @@
 
     const points = (met * (totalMinutes / 60)).toFixed(1);
 
-    trackerData.activities.push({
-      id: Date.now(),
-      date: currentDate,
-      time: startTime,
-      name: name,
-      met: met,
-      hours: hrs,
-      minutes: mins,
-      duration: totalMinutes,
-      points: parseFloat(points)
-    });
+    if (currentEditId) {
+      // Bewerk-modus
+      const index = trackerData.activities.findIndex(a => a.id === currentEditId);
+      if (index !== -1) {
+        trackerData.activities[index] = {
+          ...trackerData.activities[index],
+          time: startTime,
+          name: name,
+          met: met,
+          hours: hrs,
+          minutes: mins,
+          duration: totalMinutes,
+          points: parseFloat(points)
+        };
+      }
+      
+      // Reset bewerk status
+      currentEditId = null;
+      const btn = document.getElementById('saveActBtn');
+      btn.innerText = "Activiteit Opslaan";
+      btn.style.backgroundColor = "var(--primary)";
 
+    } else {
+      // Nieuwe activiteit toevoegen
+      trackerData.activities.push({
+        id: Date.now(),
+        date: currentDate,
+        time: startTime,
+        name: name,
+        met: met,
+        hours: hrs,
+        minutes: mins,
+        duration: totalMinutes,
+        points: parseFloat(points)
+      });
+    }
+
+    // Velden wissen na opslaan
     document.getElementById('actName').value = '';
     document.getElementById('metVal').value = '';
     document.getElementById('durHours').value = '';
@@ -554,6 +581,27 @@
     document.getElementById('presetSelect').value = '';
 
     saveData();
+  }
+
+  function editAct(id) {
+    const act = trackerData.activities.find(a => a.id === id);
+    if (!act) return;
+
+    // Vul formulier met bestaande data
+    document.getElementById('actName').value = act.name;
+    document.getElementById('metVal').value = act.met;
+    document.getElementById('startTime').value = act.time;
+    document.getElementById('durHours').value = act.hours || 0;
+    document.getElementById('durMins').value = act.minutes || 0;
+
+    // Activeer bewerk-modus
+    currentEditId = id;
+    const btn = document.getElementById('saveActBtn');
+    btn.innerText = "Activiteit Bijwerken";
+    btn.style.backgroundColor = "var(--edit-color)";
+    
+    // Scroll soepel omhoog naar het invulformulier
+    document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function deleteAct(id) {
@@ -597,15 +645,17 @@
 
         const timeDisplay = a.time ? `<span style="color:#e67e22; font-weight:bold;">${a.time}</span> - ` : '';
 
+        // Het potlood (Bewerken) en de X (Verwijderen) naast elkaar
         html += `
           <div class="entry">
             <div>
               ${timeDisplay}<strong>${a.name}</strong><br>
               <small>${durStr.trim()} | MET ${a.met}</small>
             </div>
-            <div>
-              <span class="badge">${a.points} ptn</span>
-              <button onclick="deleteAct(${a.id})" class="btn-danger btn-small" style="padding:2px 6px; margin-left:4px;">X</button>
+            <div style="display: flex; align-items: center;">
+              <span class="badge" style="margin-right: 4px;">${a.points} ptn</span>
+              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:2px 6px; margin-left:4px;" title="Bewerk Activiteit">✏️</button>
+              <button onclick="deleteAct(${a.id})" class="btn-danger btn-small" style="padding:2px 6px; margin-left:4px;" title="Verwijder Activiteit">X</button>
             </div>
           </div>
         `;
