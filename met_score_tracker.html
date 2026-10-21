@@ -14,14 +14,14 @@
       --text: #333333;
       --border: #dddddd;
       --danger: #e74c3c;
-      --success: #2ecc71;
+      --thumb-color: #2ecc71;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text);
       margin: 0;
-      padding: 15px;
+      padding: 12px;
       -webkit-tap-highlight-color: transparent;
     }
     .container {
@@ -31,59 +31,127 @@
     .card {
       background: var(--card-bg);
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: background-color 0.3s ease;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
-    .card-highlight {
-      border: 2px solid var(--primary);
+    h2 {
+      margin: 4px 0 12px 0;
+      font-size: 20px;
+      text-align: center;
     }
-    h2, h3 {
+    h3 {
       margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 16px;
       color: #1a1a1a;
     }
     label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
     }
-    input, select, button {
+    input[type="text"], input[type="number"], input[type="date"], select {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
       box-sizing: border-box;
-      font-size: 16px;
+      font-size: 14px;
     }
     button {
       background-color: var(--primary);
       color: white;
-      font-weight: bold;
+      font-weight: 600;
       border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 14px;
       cursor: pointer;
     }
-    button.btn-secondary {
+    .btn-small {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    .btn-secondary {
       background-color: #7f8c8d;
     }
-    button.btn-danger {
+    .btn-danger {
       background-color: var(--danger);
     }
+    
+    /* Datum Navigatie Balk */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .date-nav button {
+      width: 40px;
+      height: 36px;
+      padding: 0;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .date-nav input[type="date"] {
+      margin-bottom: 0;
+      text-align: center;
+      height: 36px;
+    }
+
+    /* Compacte Vermoeidheid Cards */
+    .fatigue-card {
+      border-left: 6px solid #2ecc71;
+      margin-bottom: 8px;
+      padding: 8px 10px;
+      background: #fafafa;
+      border-radius: 6px;
+    }
+    .fatigue-meta {
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    /* Custom Range Slider (Alleen de thumb verandert van kleur) */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      margin: 6px 0;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      transition: background-color 0.2s ease;
+    }
+    #fOchtend::-webkit-slider-thumb { background: var(--thumb-ochtend, #2ecc71); }
+    #fAvond::-webkit-slider-thumb { background: var(--thumb-avond, #2ecc71); }
+
     .flex-gap {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
-    .flex-gap button {
-      margin-bottom: 0;
-    }
+
     .entry {
       border-bottom: 1px solid var(--border);
-      padding: 8px 0;
+      padding: 6px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 14px;
     }
     .entry:last-child {
       border-bottom: none;
@@ -91,31 +159,29 @@
     .badge {
       background: #e1f0ff;
       color: var(--primary);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 11px;
       font-weight: bold;
     }
-    .fatigue-card {
-      border-left: 8px solid #2ecc71;
-      margin-bottom: 12px;
-      padding: 12px;
-      background: #fafafa;
-      border-radius: 8px;
+
+    /* Tabel 7 Dagen */
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 6px;
     }
-    .fatigue-meta {
-      font-weight: bold;
-      font-size: 14px;
-      margin-top: 2px;
-      margin-bottom: 8px;
+    .history-table th, .history-table td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: center;
     }
-    .stat-box {
-      background: #f0f4f8;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      font-size: 14px;
+    .history-table th {
+      background-color: #f0f4f8;
+      font-weight: 600;
     }
+
     #fileInput { display: none; }
   </style>
 </head>
@@ -124,77 +190,95 @@
 <div class="container">
   <h2>MET & Vermoeidheid Tracker</h2>
 
-  <!-- Datum Selectie -->
-  <div class="card card-highlight">
-    <label for="selectedDate">📅 Selecteer Datum (voor invoer/terugkijken):</label>
-    <input type="date" id="selectedDate" onchange="changeDate()">
+  <!-- Datum Selectie met Pjiltjes -->
+  <div class="card">
+    <label>📅 Datum selecteren:</label>
+    <div class="date-nav">
+      <button onclick="shiftDate(-1)">◀</button>
+      <input type="date" id="selectedDate" onchange="changeDate()">
+      <button onclick="shiftDate(1)">▶</button>
+    </div>
   </div>
 
-  <!-- Vermoeidheid Scores (Begin & Einde Dag) -->
+  <!-- Vermoeidheid Scores -->
   <div class="card">
     <h3>Vermoeidheid op <span class="dateDisplay"></span></h3>
 
-    <!-- Begin van de dag -->
+    <!-- Ochtend -->
     <div class="fatigue-card" id="cardOchtend">
-      <label for="fOchtend">🌅 Begin van de dag (Ochtend): <span id="valOchtend">1</span>/10</label>
+      <label for="fOchtend">🌅 Begin van de dag: <span id="valOchtend">1</span>/10</label>
       <input type="range" id="fOchtend" min="1" max="10" value="1" oninput="updateMeta('Ochtend', this.value)">
       <div class="fatigue-meta" id="metaOchtend">🟢 Fit / Normale energie</div>
     </div>
 
-    <!-- Einde van de dag -->
+    <!-- Avond -->
     <div class="fatigue-card" id="cardAvond">
-      <label for="fAvond">🌙 Einde van de dag (Avond): <span id="valAvond">1</span>/10</label>
+      <label for="fAvond">🌙 Einde van de dag: <span id="valAvond">1</span>/10</label>
       <input type="range" id="fAvond" min="1" max="10" value="1" oninput="updateMeta('Avond', this.value)">
       <div class="fatigue-meta" id="metaAvond">🟢 Fit / Normale energie</div>
     </div>
 
-    <button onclick="saveFatigue()">Scores Opslaan voor Datum</button>
+    <div style="text-align: right; margin-top: 8px;">
+      <button onclick="saveFatigue()" class="btn-small">Opslaan</button>
+    </div>
   </div>
 
   <!-- MET Invoer -->
   <div class="card">
-    <h3>Activiteit Toevoegen op <span class="dateDisplay"></span></h3>
+    <h3>Activiteit Toevoegen</h3>
     <label for="actName">Activiteit</label>
     <input type="text" id="actName" placeholder="bijv. Wandelen, Lezen, Koken">
     
-    <label for="metVal">MET-score</label>
-    <input type="number" id="metVal" step="0.1" placeholder="bijv. 2.5">
-    
-    <label for="duration">Duur (minuten)</label>
-    <input type="number" id="duration" placeholder="bijv. 30">
+    <div class="flex-gap">
+      <div style="flex: 1;">
+        <label for="metVal">MET-score</label>
+        <input type="number" id="metVal" step="0.1" placeholder="2.5">
+      </div>
+      <div style="flex: 1;">
+        <label for="duration">Duur (min)</label>
+        <input type="number" id="duration" placeholder="30">
+      </div>
+    </div>
 
-    <button onclick="addActivity()">Activiteit Opslaan</button>
+    <div style="text-align: right;">
+      <button onclick="addActivity()" class="btn-small">Activiteit Opslaan</button>
+    </div>
   </div>
 
   <!-- Dagoverzicht & Logboek -->
   <div class="card">
     <h3>Logboek <span class="dateDisplay"></span></h3>
     <div id="logList">Nog geen activiteiten ingevoerd.</div>
-    <hr style="border:none; border-top:1px solid #ddd; margin: 12px 0;">
-    <p style="margin:0;"><strong>Totaal MET-punten deze dag: </strong><span id="totalMET" style="font-size:18px; color:var(--primary);">0</span></p>
+    <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
+    <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
   </div>
 
-  <!-- Database & Statistieken -->
+  <!-- Tabel Afgelopen 7 Dagen -->
   <div class="card">
-    <h3>Database & Statistieken</h3>
-    <div class="stat-box">
-      <strong>Gemiddelde Vermoeidheid (Laatste 7 dagen):</strong><br>
-      <span id="avgFatigue">Nog geen data</span>
-    </div>
-    <div class="stat-box">
-      <strong>Gemiddelde MET-punten (Laatste 7 dagen):</strong><br>
-      <span id="avgMET">0 punten/dag</span>
-    </div>
+    <h3>📊 Afgelopen 7 Dagen</h3>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>🌅 Och.</th>
+          <th>🌙 Av.</th>
+          <th>MET</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody">
+        <!-- Gefilterde rijen worden hier opgebouwd -->
+      </tbody>
+    </table>
   </div>
 
-  <!-- Back-up & Beheer Knoppen -->
+  <!-- Back-up & Data Beheer -->
   <div class="card">
-    <h3>Data Beheer & Back-up</h3>
-    <div class="flex-gap" style="margin-bottom: 10px;">
-      <button onclick="exportData()" class="btn-secondary">Exporteer Data</button>
-      <button onclick="document.getElementById('fileInput').click()" class="btn-secondary">Importeer Data</button>
+    <h3>Data Beheer</h3>
+    <div class="flex-gap" style="margin-bottom: 8px;">
+      <button onclick="exportData()" class="btn-secondary btn-small" style="flex:1;">Exporteer Data</button>
+      <button onclick="document.getElementById('fileInput').click()" class="btn-secondary btn-small" style="flex:1;">Importeer Data</button>
     </div>
-    <button onclick="clearAllData()" class="btn-danger">Wis Alle Data</button>
+    <button onclick="clearAllData()" class="btn-danger btn-small" style="width:100%;">Wis Alle Data</button>
     <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
   </div>
 </div>
@@ -221,6 +305,14 @@
     10: { text: "🟣 10 - Maximale uitputting / Crash", color: "#6c3483" }
   };
 
+  function shiftDate(offset) {
+    let d = new Date(currentDate);
+    d.setDate(d.getDate() + offset);
+    currentDate = d.toISOString().split('T')[0];
+    document.getElementById('selectedDate').value = currentDate;
+    render();
+  }
+
   function changeDate() {
     currentDate = document.getElementById('selectedDate').value;
     render();
@@ -235,6 +327,9 @@
     metaDiv.innerText = meta.text;
     metaDiv.style.color = meta.color;
     card.style.borderLeftColor = meta.color;
+
+    // Stel dynamische thumb-kleur in
+    document.documentElement.style.setProperty(`--thumb-${type.toLowerCase()}`, meta.color);
   }
 
   function saveData() {
@@ -250,7 +345,7 @@
     trackerData.fatigueLogs[currentDate].avond = document.getElementById('fAvond').value;
     
     saveData();
-    alert(`Vermoeidheidsscores voor ${currentDate} opgeslagen!`);
+    alert(`Vermoeidheid opgeslagen voor ${currentDate}`);
   }
 
   function addActivity() {
@@ -259,7 +354,7 @@
     const dur = parseInt(document.getElementById('duration').value);
 
     if (!name || isNaN(met) || isNaN(dur)) {
-      alert('Vul a.u.b. alle velden van de activiteit in.');
+      alert('Vul a.u.b. alle velden in.');
       return;
     }
 
@@ -287,12 +382,11 @@
   }
 
   function render() {
-    // Update datum weergave op kaarten
     document.querySelectorAll('.dateDisplay').forEach(el => {
       el.innerText = currentDate;
     });
 
-    // Laad vermoeidheid voor geselecteerde datum
+    // Vermoeidheid laders
     const fToday = trackerData.fatigueLogs[currentDate] || {};
     ['Ochtend', 'Avond'].forEach(type => {
       const key = type.toLowerCase();
@@ -301,12 +395,12 @@
       updateMeta(type, val);
     });
 
-    // Render Logboek voor geselecteerde datum
+    // Logboek Vandaag
     const list = document.getElementById('logList');
     const dayActs = trackerData.activities.filter(a => a.date === currentDate);
 
     if (dayActs.length === 0) {
-      list.innerHTML = `<i>Nog geen activiteiten ingevoerd voor ${currentDate}.</i>`;
+      list.innerHTML = `<i>Geen activiteiten op ${currentDate}.</i>`;
       document.getElementById('totalMET').innerText = '0';
     } else {
       let html = '';
@@ -321,7 +415,7 @@
             </div>
             <div>
               <span class="badge">${a.points} ptn</span>
-              <button onclick="deleteAct(${a.id})" class="btn-danger" style="width:auto; padding:4px 8px; margin:0 0 0 5px;">X</button>
+              <button onclick="deleteAct(${a.id})" class="btn-danger btn-small" style="padding:2px 6px; margin-left:4px;">X</button>
             </div>
           </div>
         `;
@@ -330,32 +424,45 @@
       document.getElementById('totalMET').innerText = total.toFixed(1);
     }
 
-    // Bereken Statistieken Database
-    calculateStats();
+    // Tabel 7 dagen vullen
+    renderHistoryTable();
   }
 
-  function calculateStats() {
-    const dates = Object.keys(trackerData.fatigueLogs).sort().slice(-7);
-    if (dates.length === 0) return;
+  function renderHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    tbody.innerHTML = '';
 
-    let sumFatigue = 0, countFatigue = 0;
-    dates.forEach(d => {
-      const log = trackerData.fatigueLogs[d];
-      if (log.ochtend) { sumFatigue += parseFloat(log.ochtend); countFatigue++; }
-      if (log.avond) { sumFatigue += parseFloat(log.avond); countFatigue++; }
-    });
+    // Genereer de afgelopen 7 dagen vanaf de geselecteerde datum
+    let dates = [];
+    let baseDate = new Date(currentDate);
 
-    if (countFatigue > 0) {
-      document.getElementById('avgFatigue').innerText = (sumFatigue / countFatigue).toFixed(1) + " / 10";
+    for (let i = 6; i >= 0; i--) {
+      let d = new Date(baseDate);
+      d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().split('T')[0]);
     }
 
-    let totalMET7 = 0;
-    trackerData.activities.forEach(a => {
-      if (dates.includes(a.date)) {
-        totalMET7 += a.points;
-      }
+    dates.forEach(dStr => {
+      const fLog = trackerData.fatigueLogs[dStr] || {};
+      const ochtend = fLog.ochtend || '-';
+      const avond = fLog.avond || '-';
+
+      let totalMET = 0;
+      trackerData.activities.filter(a => a.date === dStr).forEach(a => {
+        totalMET += a.points;
+      });
+
+      const isCurrent = (dStr === currentDate);
+      const rowHtml = `
+        <tr style="${isCurrent ? 'background-color: #e1f0ff; font-weight:bold;' : ''}">
+          <td>${dStr.slice(5)}</td>
+          <td>${ochtend}</td>
+          <td>${avond}</td>
+          <td>${totalMET > 0 ? totalMET.toFixed(1) : '-'}</td>
+        </tr>
+      `;
+      tbody.innerHTML += rowHtml;
     });
-    document.getElementById('avgMET').innerText = (totalMET7 / Math.max(dates.length, 1)).toFixed(1) + " punten/dag";
   }
 
   function exportData() {
