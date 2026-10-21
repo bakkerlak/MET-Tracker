@@ -145,31 +145,35 @@
       align-items: center;
     }
 
-    .compact-row {
+    /* Nieuwe Grid Layouts voor invoer */
+    .input-row-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-      gap: 6px;
-      align-items: end;
+      grid-template-columns: 2fr 1fr;
+      gap: 8px;
       margin-bottom: 8px;
     }
-
+    .input-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
     .compact-field {
       display: flex;
       flex-direction: column;
     }
-
     .compact-field label {
       font-size: 11px;
       margin-bottom: 2px;
       white-space: nowrap;
     }
-
     .compact-field input {
       margin-bottom: 0;
-      padding: 6px 4px;
-      font-size: 13px;
-      text-align: center;
+      padding: 8px 6px;
+      font-size: 14px;
     }
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
 
     .entry {
       border-bottom: 1px solid var(--border);
@@ -285,34 +289,39 @@
       <!-- Wordt dynamisch gevuld -->
     </select>
 
-    <div style="text-align: right; margin-bottom: 8px;">
+    <div style="text-align: right; margin-bottom: 12px;">
       <button onclick="openDbModal()" class="btn-secondary btn-small">⚙️ Beheer MET-Lijst & Favorieten</button>
     </div>
-
-    <label for="actName">Activiteit Naam</label>
-    <input type="text" id="actName" placeholder="bijv. Wandelen, Lezen, Koken">
     
-    <!-- Compacte invoerrij voor Tijd, MET, Uren & Minuten -->
-    <div class="compact-row">
+    <!-- Regel 1: Naam en MET-score -->
+    <div class="input-row-2">
       <div class="compact-field">
-        <label for="startTime">Tijd</label>
-        <input type="time" id="startTime">
+        <label for="actName">Activiteit Naam</label>
+        <input type="text" id="actName" class="text-left" placeholder="bijv. Wandelen">
       </div>
       <div class="compact-field">
-        <label for="metVal">MET</label>
-        <input type="number" id="metVal" step="0.1" placeholder="2.5">
+        <label for="metVal">MET-score</label>
+        <input type="number" id="metVal" class="text-center" step="0.1" placeholder="2.5">
+      </div>
+    </div>
+
+    <!-- Regel 2: Tijd, Uren, Minuten -->
+    <div class="input-row-3">
+      <div class="compact-field">
+        <label for="startTime">Starttijd</label>
+        <input type="time" id="startTime" class="text-center">
       </div>
       <div class="compact-field">
         <label for="durHours">Uren</label>
-        <input type="number" id="durHours" min="0" max="24" placeholder="0u">
+        <input type="number" id="durHours" class="text-center" min="0" max="24" placeholder="0u">
       </div>
       <div class="compact-field">
         <label for="durMins">Minuten</label>
-        <input type="number" id="durMins" min="0" max="59" placeholder="30m">
+        <input type="number" id="durMins" class="text-center" min="0" max="59" placeholder="30m">
       </div>
     </div>
 
-    <div style="text-align: right; margin-top: 6px;">
+    <div style="text-align: right; margin-top: 8px;">
       <button onclick="addActivity()" class="btn-small">Activiteit Opslaan</button>
     </div>
   </div>
