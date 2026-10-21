@@ -14,7 +14,6 @@
       --text: #333333;
       --border: #dddddd;
       --danger: #e74c3c;
-      --success: #2ecc71;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -34,6 +33,7 @@
       padding: 16px;
       margin-bottom: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: background-color 0.3s ease;
     }
     h2, h3 {
       margin-top: 0;
@@ -92,9 +92,17 @@
       font-size: 12px;
       font-weight: bold;
     }
-    #fileInput {
-      display: none;
+    /* Kleurstijlen voor vermoeidheidsscores */
+    .fatigue-card {
+      transition: border-left 0.3s, background-color 0.3s;
+      border-left: 8px solid #2ecc71;
     }
+    .fatigue-meta {
+      font-weight: bold;
+      font-size: 15px;
+      margin-top: 4px;
+    }
+    #fileInput { display: none; }
   </style>
 </head>
 <body>
@@ -102,12 +110,13 @@
 <div class="container">
   <h2>MET & Vermoeidheid Tracker</h2>
 
-  <!-- Vermoeidheid Score -->
-  <div class="card">
+  <!-- Vermoeidheid Score met Kleuren & Metaforen -->
+  <div class="card fatigue-card" id="fatigueCard">
     <h3>Vermoeidheid Vandaag</h3>
-    <label for="fatigue">Score (1 = fit, 10 = extreem moe): <span id="fatigueVal">5</span></label>
-    <input type="range" id="fatigue" min="1" max="10" value="5" oninput="document.getElementById('fatigueVal').innerText=this.value">
-    <button onclick="saveFatigue()">Vermoeidheid Opslaan</button>
+    <label for="fatigue">Score: <span id="fatigueVal">1</span>/10</label>
+    <input type="range" id="fatigue" min="1" max="10" value="1" oninput="updateFatigueMeta(this.value)">
+    <div class="fatigue-meta" id="fatigueMeta">🟢 1 - Fit / Normale energie</div>
+    <button onclick="saveFatigue()" style="margin-top: 12px;">Vermoeidheid Opslaan</button>
   </div>
 
   <!-- MET Invoer -->
@@ -150,6 +159,31 @@
   };
 
   const today = new Date().toISOString().split('T')[0];
+
+  const fatigueMetaMap = {
+    1: { text: "🟢 1 - Fit / Volledige energie", color: "#2ecc71", bg: "#eafaf1" },
+    2: { text: "🟢 2 - Lichte energieafname", color: "#27ae60", bg: "#eafaf1" },
+    3: { text: "🟡 3 - Milde vermoeidheid", color: "#f1c40f", bg: "#fef9e7" },
+    4: { text: "🟡 4 - Duidelijk merkbare moeheid", color: "#f39c12", bg: "#fef9e7" },
+    5: { text: "🟠 5 - Matige vermoeidheid / Rust nodig", color: "#e67e22", bg: "#fbeee6" },
+    6: { text: "🟠 6 - Zware vermoeidheid", color: "#d35400", bg: "#fbeee6" },
+    7: { text: "🔴 7 - Zeer zwaar / Batterij bijna leeg", color: "#e74c3c", bg: "#fadbd8" },
+    8: { text: "🔴 8 - Uitgeput / Minimale belastbaarheid", color: "#c0392b", bg: "#fadbd8" },
+    9: { text: "🟣 9 - Extreem uitgeput / Platliggen", color: "#8e44ad", bg: "#f4ecf7" },
+    10: { text: "🟣 10 - Maximale uitputting / Crash", color: "#6c3483", bg: "#f4ecf7" }
+  };
+
+  function updateFatigueMeta(val) {
+    document.getElementById('fatigueVal').innerText = val;
+    const meta = fatigueMetaMap[val] || fatigueMetaMap[1];
+    const metaDiv = document.getElementById('fatigueMeta');
+    const card = document.getElementById('fatigueCard');
+    
+    metaDiv.innerText = meta.text;
+    metaDiv.style.color = meta.color;
+    card.style.borderLeftColor = meta.color;
+    card.style.backgroundColor = meta.bg;
+  }
 
   function saveData() {
     localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
@@ -197,13 +231,14 @@
   }
 
   function render() {
-    // Set fatigue for today if exists
     if (trackerData.fatigueLogs[today]) {
-      document.getElementById('fatigue').value = trackerData.fatigueLogs[today];
-      document.getElementById('fatigueVal').innerText = trackerData.fatigueLogs[today];
+      const val = trackerData.fatigueLogs[today];
+      document.getElementById('fatigue').value = val;
+      updateFatigueMeta(val);
+    } else {
+      updateFatigueMeta(document.getElementById('fatigue').value);
     }
 
-    // Render today activities
     const list = document.getElementById('logList');
     const todayActs = trackerData.activities.filter(a => a.date === today);
 
@@ -236,7 +271,6 @@
     document.getElementById('totalMET').innerText = total.toFixed(1);
   }
 
-  // --- Export & Import functionaliteit ---
   function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
     const downloadAnchor = document.createElement('a');
