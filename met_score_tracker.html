@@ -334,24 +334,57 @@
 </div>
 
 <script>
-  // Standaard MET-Database
+  // Officiële MET-Database overgenomen uit de MET-methode meetinstructie
   const defaultPresets = [
-    { name: "Rusten / Slapen", met: 0.9, fav: false },
-    { name: "Tv kijken / Zitten", met: 1.3, fav: false },
-    { name: "Lezen / Bellen", met: 1.3, fav: false },
-    { name: "Computerwerk / Bureau", met: 1.5, fav: false },
-    { name: "Eten / Praten", met: 1.5, fav: false },
-    { name: "Staand werk / Douchen", met: 2.0, fav: false },
-    { name: "Koken / Afwassen", met: 2.5, fav: true },
-    { name: "Licht huishoudelijk werk", met: 2.8, fav: false },
-    { name: "Wandelen (rustig tempo)", met: 3.0, fav: true },
-    { name: "Boodschappen doen", met: 3.5, fav: false },
-    { name: "Stofzuigen / Schoonmaken", met: 3.5, fav: false },
-    { name: "Fietsen (rustig tempo)", met: 4.0, fav: true },
-    { name: "Wandelen (stevig tempo)", met: 4.3, fav: false },
-    { name: "Tuinieren", met: 4.5, fav: false },
-    { name: "Fietsen (gemiddeld tempo)", met: 6.8, fav: false },
-    { name: "Hardlopen / Sporten", met: 8.0, fav: false }
+    // MET 1.0 - 1.5
+    { name: "Slapen", met: 1.0, fav: false },
+    { name: "Rustig zitten / Eten", met: 1.0, fav: true },
+    { name: "Zichzelf wassen / Scheren / Aankleden", met: 1.5, fav: true },
+    { name: "Afwassen / Schrijven", met: 1.5, fav: false },
+    { name: "TV kijken / Kaarten", met: 1.5, fav: false },
+    { name: "Rechtop staan (15 min) / Naaiwerk", met: 1.5, fav: false },
+    { name: "Licht bureauwerk / Typen", met: 1.5, fav: false },
+    
+    // MET 2.0
+    { name: "Wagen besturen", met: 2.0, fav: true },
+    { name: "Koken", met: 2.0, fav: true },
+    { name: "Borstelen / Dweilen / Afstoffen", met: 2.0, fav: false },
+    { name: "Muziek spelen (piano/gitaar) / Tekenen", met: 2.0, fav: false },
+    { name: "Wandelen (2,5 km/u)", met: 2.0, fav: false },
+
+    // MET 3.0
+    { name: "Bedden opmaken / Stofzuigen / Strijken", met: 3.0, fav: true },
+    { name: "Meubilair boenen / Tuinieren", met: 3.0, fav: false },
+    { name: "Boodschappen doen", met: 3.5, fav: true },
+    { name: "Wandelen (3-4 km/u)", met: 3.0, fav: true },
+    { name: "Fietsen (8 km/u)", met: 3.0, fav: false },
+    { name: "Lichte gymnastiek / Bowling / Golfen", met: 3.0, fav: false },
+
+    // MET 4.0
+    { name: "Douchen", met: 4.0, fav: true },
+    { name: "Ruiten wassen / Vloer schrobben", met: 4.0, fav: false },
+    { name: "Trappen afdalen", met: 4.0, fav: false },
+    { name: "Grasmaaien (elektrisch) / Wieden", met: 4.0, fav: false },
+    { name: "Wandelen (5 km/u)", met: 4.0, fav: true },
+    { name: "Fietsen (10 km/u)", met: 4.0, fav: true },
+    { name: "Zwemmen (schoolslag) / Badminton", met: 4.0, fav: false },
+
+    // MET 5.0 - 6.0
+    { name: "Boodschappen met zware tas", met: 5.0, fav: false },
+    { name: "Spitten in de tuin / Grasmaaien handmatig", met: 5.0, fav: false },
+    { name: "Fietsen (12 km/u)", met: 5.0, fav: false },
+    { name: "Wandelen (5,5 km/u)", met: 5.0, fav: false },
+    { name: "Trappen oplopen", met: 6.0, fav: false },
+    { name: "Tennis (enkel) / Basketbal / Voetbal", met: 6.0, fav: false },
+
+    // MET 7.0 - 10.0+
+    { name: "Sneeuw ruimen / Hout klieven", met: 7.0, fav: false },
+    { name: "Fietsen (15 km/u) / Wandelen (7,5 km/u)", met: 7.0, fav: false },
+    { name: "Fietsen (19 km/u) / Joggen (8 km/u)", met: 8.0, fav: false },
+    { name: "Zwemmen (crawl zeer snel)", met: 9.0, fav: false },
+    { name: "Fietsen (23 km/u) / Squash / Roeien", met: 10.0, fav: false },
+    { name: "Lopen (10 km/u)", met: 11.0, fav: false },
+    { name: "Lopen (12 km/u) / Fietsen (25 km/u)", met: 12.0, fav: false }
   ];
 
   let trackerData = JSON.parse(localStorage.getItem('metTrackerData')) || {
@@ -360,15 +393,16 @@
     customDb: defaultPresets
   };
 
-  // Migratie voor oude gegevens indien van toepassing
-  if (!trackerData.customDb) trackerData.customDb = defaultPresets;
+  // Zorg dat de nieuwste officiële presets worden ingeladen bij een update
+  if (!trackerData.customDb || trackerData.customDb.length < 20) {
+    trackerData.customDb = defaultPresets;
+  }
   if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
 
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   let historyChart = null;
 
-  // Positieve Energie Metaforen (10 = Volledige energie, 1 = Crash)
   const energyMetaMap = {
     10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
     9:  { text: "🟢 9 - Zeer goed energieniveau", color: "#27ae60" },
@@ -386,7 +420,6 @@
     const select = document.getElementById('presetSelect');
     select.innerHTML = '<option value="">-- Kies uit MET-Database --</option>';
 
-    // Sorteer: Favorieten ⭐ bovenaan, daarna alfabetisch
     const sorted = [...trackerData.customDb].sort((a, b) => {
       if (b.fav !== a.fav) return b.fav - a.fav;
       return a.name.localeCompare(b.name);
@@ -645,7 +678,7 @@
     });
   }
 
-  /* --- Modal & Database Beheer --- */
+  /* Modal & Database Beheer */
   function openDbModal() {
     renderDbModalList();
     document.getElementById('dbModal').style.display = 'flex';
