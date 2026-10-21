@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>MET & Vermoeidheid Tracker</title>
-  <!-- Chart.js bibliotheek voor de grafiek -->
+  <title>MET & Energie Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -16,7 +15,8 @@
       --text: #333333;
       --border: #dddddd;
       --danger: #e74c3c;
-      --thumb-color: #2ecc71;
+      --thumb-ochtend: #2ecc71;
+      --thumb-avond: #2ecc71;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -85,7 +85,6 @@
       background-color: var(--danger);
     }
     
-    /* Datum Navigatie Balk */
     .date-nav {
       display: flex;
       align-items: center;
@@ -105,21 +104,19 @@
       height: 36px;
     }
 
-    /* Compacte Vermoeidheid Cards */
-    .fatigue-card {
+    .energy-card {
       border-left: 6px solid #2ecc71;
       margin-bottom: 8px;
       padding: 8px 10px;
       background: #fafafa;
       border-radius: 6px;
     }
-    .fatigue-meta {
+    .energy-meta {
       font-weight: bold;
       font-size: 12px;
       margin-top: 2px;
     }
 
-    /* Custom Range Slider */
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
@@ -139,8 +136,8 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.3);
       transition: background-color 0.2s ease;
     }
-    #fOchtend::-webkit-slider-thumb { background: var(--thumb-ochtend, #2ecc71); }
-    #fAvond::-webkit-slider-thumb { background: var(--thumb-avond, #2ecc71); }
+    #eOchtend::-webkit-slider-thumb { background: var(--thumb-ochtend, #2ecc71); }
+    #eAvond::-webkit-slider-thumb { background: var(--thumb-avond, #2ecc71); }
 
     .flex-gap {
       display: flex;
@@ -167,11 +164,48 @@
       font-weight: bold;
     }
 
-    /* Grafiek Container */
     .chart-container {
       position: relative;
       height: 240px;
       width: 100%;
+    }
+
+    /* Modal Styling voor Database Beheer */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .db-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 6px;
+      color: #ccc;
+    }
+    .star-btn.active {
+      color: #f1c40f;
     }
 
     #fileInput { display: none; }
@@ -180,9 +214,9 @@
 <body>
 
 <div class="container">
-  <h2>MET & Vermoeidheid Tracker</h2>
+  <h2>MET & Energie Tracker</h2>
 
-  <!-- Datum Selectie met Pijltjes -->
+  <!-- Datum Selectie -->
   <div class="card">
     <label>📅 Datum selecteren:</label>
     <div class="date-nav">
@@ -192,26 +226,26 @@
     </div>
   </div>
 
-  <!-- Vermoeidheid Scores -->
+  <!-- Energieniveau Scores (10 = Vol, 1 = Leeg) -->
   <div class="card">
-    <h3>Vermoeidheid op <span class="dateDisplay"></span></h3>
+    <h3>Energieniveau op <span class="dateDisplay"></span></h3>
 
     <!-- Ochtend -->
-    <div class="fatigue-card" id="cardOchtend">
-      <label for="fOchtend">🌅 Begin van de dag: <span id="valOchtend">1</span>/10</label>
-      <input type="range" id="fOchtend" min="1" max="10" value="1" oninput="updateMeta('Ochtend', this.value)">
-      <div class="fatigue-meta" id="metaOchtend">🟢 Fit / Normale energie</div>
+    <div class="energy-card" id="cardOchtend">
+      <label for="eOchtend">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
+      <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
+      <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
     </div>
 
     <!-- Avond -->
-    <div class="fatigue-card" id="cardAvond">
-      <label for="fAvond">🌙 Einde van de dag: <span id="valAvond">1</span>/10</label>
-      <input type="range" id="fAvond" min="1" max="10" value="1" oninput="updateMeta('Avond', this.value)">
-      <div class="fatigue-meta" id="metaAvond">🟢 Fit / Normale energie</div>
+    <div class="energy-card" id="cardAvond">
+      <label for="eAvond">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
+      <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
+      <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
     </div>
 
     <div style="text-align: right; margin-top: 8px;">
-      <button onclick="saveFatigue()" class="btn-small">Opslaan</button>
+      <button onclick="saveEnergy()" class="btn-small">Opslaan</button>
     </div>
   </div>
 
@@ -219,26 +253,14 @@
   <div class="card">
     <h3>Activiteit Toevoegen</h3>
     
-    <label for="presetSelect">Kies uit MET-Database (optioneel):</label>
+    <label for="presetSelect">Kies uit MET-Database:</label>
     <select id="presetSelect" onchange="selectPreset()">
-      <option value="">-- Kies een standaard activiteit --</option>
-      <option value="Rusten / Slapen|0.9">Rusten / Slapen (MET 0.9)</option>
-      <option value="Tv kijken / Zitten|1.3">Tv kijken / Zitten (MET 1.3)</option>
-      <option value="Lezen / Bellen|1.3">Lezen / Bellen (MET 1.3)</option>
-      <option value="Computerwerk / Bureau|1.5">Computerwerk / Bureau (MET 1.5)</option>
-      <option value="Eten / Praten|1.5">Eten / Praten (MET 1.5)</option>
-      <option value="Staand werk / Douchen|2.0">Staand werk / Douchen (MET 2.0)</option>
-      <option value="Koken / Afwassen|2.5">Koken / Afwassen (MET 2.5)</option>
-      <option value="Licht huishoudelijk werk|2.8">Licht huishoudelijk werk (MET 2.8)</option>
-      <option value="Wandelen (rustig tempo)|3.0">Wandelen rustig (MET 3.0)</option>
-      <option value="Boodschappen doen|3.5">Boodschappen doen (MET 3.5)</option>
-      <option value="Stofzuigen / Schoonmaken|3.5">Stofzuigen / Schoonmaken (MET 3.5)</option>
-      <option value="Fietsen (rustig tempo)|4.0">Fietsen rustig (MET 4.0)</option>
-      <option value="Wandelen (stevig tempo)|4.3">Wandelen stevig (MET 4.3)</option>
-      <option value="Tuinieren|4.5">Tuinieren (MET 4.5)</option>
-      <option value="Fietsen (gemiddeld tempo)|6.8">Fietsen gemiddeld (MET 6.8)</option>
-      <option value="Hardlopen / Sporten|8.0">Hardlopen / Sporten (MET 8.0)</option>
+      <!-- Wordt dynamisch gevuld met Favorieten bovenaan -->
     </select>
+
+    <div style="text-align: right; margin-bottom: 10px;">
+      <button onclick="openDbModal()" class="btn-secondary btn-small">⚙️ Beheer MET-Lijst & Favorieten</button>
+    </div>
 
     <label for="actName">Activiteit Naam</label>
     <input type="text" id="actName" placeholder="bijv. Wandelen, Lezen, Koken">
@@ -287,28 +309,96 @@
   </div>
 </div>
 
+<!-- Modal voor MET Database Beheer -->
+<div class="modal" id="dbModal">
+  <div class="modal-content">
+    <h3>⚙️ Beheer MET-Lijst & Favorieten</h3>
+    <p style="font-size:12px; color:#666;">Klik op het sterretje ⭐ om een activiteit als favoriet bovenaan te zetten.</p>
+    
+    <!-- Nieuwe activiteit toevoegen aan DB -->
+    <div style="background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:12px;">
+      <label style="font-size:12px;">Nieuwe activiteit toevoegen:</label>
+      <div class="flex-gap">
+        <input type="text" id="newDbName" placeholder="Naam" style="margin:0;">
+        <input type="number" id="newDbMet" step="0.1" placeholder="MET" style="width:70px; margin:0;">
+        <button onclick="addNewDbItem()" class="btn-small">+</button>
+      </div>
+    </div>
+
+    <div id="dbListContainer"></div>
+
+    <div style="text-align: right; margin-top: 12px;">
+      <button onclick="closeDbModal()" class="btn-small">Sluiten</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  // Standaard MET-Database
+  const defaultPresets = [
+    { name: "Rusten / Slapen", met: 0.9, fav: false },
+    { name: "Tv kijken / Zitten", met: 1.3, fav: false },
+    { name: "Lezen / Bellen", met: 1.3, fav: false },
+    { name: "Computerwerk / Bureau", met: 1.5, fav: false },
+    { name: "Eten / Praten", met: 1.5, fav: false },
+    { name: "Staand werk / Douchen", met: 2.0, fav: false },
+    { name: "Koken / Afwassen", met: 2.5, fav: true },
+    { name: "Licht huishoudelijk werk", met: 2.8, fav: false },
+    { name: "Wandelen (rustig tempo)", met: 3.0, fav: true },
+    { name: "Boodschappen doen", met: 3.5, fav: false },
+    { name: "Stofzuigen / Schoonmaken", met: 3.5, fav: false },
+    { name: "Fietsen (rustig tempo)", met: 4.0, fav: true },
+    { name: "Wandelen (stevig tempo)", met: 4.3, fav: false },
+    { name: "Tuinieren", met: 4.5, fav: false },
+    { name: "Fietsen (gemiddeld tempo)", met: 6.8, fav: false },
+    { name: "Hardlopen / Sporten", met: 8.0, fav: false }
+  ];
+
   let trackerData = JSON.parse(localStorage.getItem('metTrackerData')) || {
-    fatigueLogs: {},
-    activities: []
+    energyLogs: {},
+    activities: [],
+    customDb: defaultPresets
   };
+
+  // Migratie voor oude gegevens indien van toepassing
+  if (!trackerData.customDb) trackerData.customDb = defaultPresets;
+  if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
 
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   let historyChart = null;
 
-  const fatigueMetaMap = {
-    1: { text: "🟢 1 - Fit / Volledige energie", color: "#2ecc71" },
-    2: { text: "🟢 2 - Lichte energieafname", color: "#27ae60" },
-    3: { text: "🟡 3 - Milde vermoeidheid", color: "#f1c40f" },
-    4: { text: "🟡 4 - Duidelijk merkbare moeheid", color: "#f39c12" },
-    5: { text: "🟠 5 - Matige vermoeidheid / Rust nodig", color: "#e67e22" },
-    6: { text: "🟠 6 - Zware vermoeidheid", color: "#d35400" },
-    7: { text: "🔴 7 - Zeer zwaar / Batterij bijna leeg", color: "#e74c3c" },
-    8: { text: "🔴 8 - Uitgeput / Minimale belastbaarheid", color: "#c0392b" },
-    9: { text: "🟣 9 - Extreem uitgeput / Platliggen", color: "#8e44ad" },
-    10: { text: "🟣 10 - Maximale uitputting / Crash", color: "#6c3483" }
+  // Positieve Energie Metaforen (10 = Volledige energie, 1 = Crash)
+  const energyMetaMap = {
+    10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
+    9:  { text: "🟢 9 - Zeer goed energieniveau", color: "#27ae60" },
+    8:  { text: "🟡 8 - Goed / Lichte vermoeidheid", color: "#f1c40f" },
+    7:  { text: "🟡 7 - Redelijk / Energie neemt af", color: "#f39c12" },
+    6:  { text: "🟠 6 - Matige energie / Rust nodig", color: "#e67e22" },
+    5:  { text: "🟠 5 - Laag energieniveau", color: "#d35400" },
+    4:  { text: "🔴 4 - Erg moe / Minimale energie", color: "#e74c3c" },
+    3:  { text: "🔴 3 - Uitgeput / Heel weinig puf", color: "#c0392b" },
+    2:  { text: "🟣 2 - Extreem leeg / Platliggen", color: "#8e44ad" },
+    1:  { text: "🟣 1 - Maximale uitputting / Crash", color: "#6c3483" }
   };
+
+  function renderPresetDropdown() {
+    const select = document.getElementById('presetSelect');
+    select.innerHTML = '<option value="">-- Kies uit MET-Database --</option>';
+
+    // Sorteer: Favorieten ⭐ bovenaan, daarna alfabetisch
+    const sorted = [...trackerData.customDb].sort((a, b) => {
+      if (b.fav !== a.fav) return b.fav - a.fav;
+      return a.name.localeCompare(b.name);
+    });
+
+    sorted.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = `${item.name}|${item.met}`;
+      opt.innerText = `${item.fav ? '⭐ ' : ''}${item.name} (MET ${item.met})`;
+      select.appendChild(opt);
+    });
+  }
 
   function selectPreset() {
     const val = document.getElementById('presetSelect').value;
@@ -334,7 +424,7 @@
 
   function updateMeta(type, val) {
     document.getElementById('val' + type).innerText = val;
-    const meta = fatigueMetaMap[val] || fatigueMetaMap[1];
+    const meta = energyMetaMap[val] || energyMetaMap[10];
     const metaDiv = document.getElementById('meta' + type);
     const card = document.getElementById('card' + type);
     
@@ -350,15 +440,15 @@
     render();
   }
 
-  function saveFatigue() {
-    if (!trackerData.fatigueLogs[currentDate]) {
-      trackerData.fatigueLogs[currentDate] = {};
+  function saveEnergy() {
+    if (!trackerData.energyLogs[currentDate]) {
+      trackerData.energyLogs[currentDate] = {};
     }
-    trackerData.fatigueLogs[currentDate].ochtend = document.getElementById('fOchtend').value;
-    trackerData.fatigueLogs[currentDate].avond = document.getElementById('fAvond').value;
+    trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
+    trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
     
     saveData();
-    alert(`Vermoeidheid opgeslagen voor ${currentDate}`);
+    alert(`Energieniveau opgeslagen voor ${currentDate}`);
   }
 
   function addActivity() {
@@ -400,11 +490,13 @@
       el.innerText = currentDate;
     });
 
-    const fToday = trackerData.fatigueLogs[currentDate] || {};
+    renderPresetDropdown();
+
+    const eToday = trackerData.energyLogs[currentDate] || {};
     ['Ochtend', 'Avond'].forEach(type => {
       const key = type.toLowerCase();
-      const val = fToday[key] || 1;
-      document.getElementById('f' + type).value = val;
+      const val = eToday[key] || 10;
+      document.getElementById('e' + type).value = val;
       updateMeta(type, val);
     });
 
@@ -453,11 +545,11 @@
       d.setDate(d.getDate() - i);
       let dStr = d.toISOString().split('T')[0];
       dates.push(dStr);
-      labels.push(dStr.slice(5)); // 'MM-DD'
+      labels.push(dStr.slice(5));
 
-      const fLog = trackerData.fatigueLogs[dStr] || {};
-      ochtendData.push(fLog.ochtend ? parseFloat(fLog.ochtend) : null);
-      avondData.push(fLog.avond ? parseFloat(fLog.avond) : null);
+      const eLog = trackerData.energyLogs[dStr] || {};
+      ochtendData.push(eLog.ochtend ? parseFloat(eLog.ochtend) : null);
+      avondData.push(eLog.avond ? parseFloat(eLog.avond) : null);
 
       let totalMET = 0;
       trackerData.activities.filter(a => a.date === dStr).forEach(a => {
@@ -479,32 +571,32 @@
         datasets: [
           {
             type: 'line',
-            label: '🌅 Och. Vermoeidheid',
+            label: '🌅 Och. Energie',
             data: ochtendData,
-            borderColor: '#f39c12',
-            backgroundColor: '#f39c12',
+            borderColor: '#2ecc71',
+            backgroundColor: '#2ecc71',
             borderWidth: 2,
             tension: 0.2,
-            yAxisID: 'yFatigue',
+            yAxisID: 'yEnergy',
             spanGaps: true
           },
           {
             type: 'line',
-            label: '🌙 Av. Vermoeidheid',
+            label: '🌙 Av. Energie',
             data: avondData,
-            borderColor: '#8e44ad',
-            backgroundColor: '#8e44ad',
+            borderColor: '#3498db',
+            backgroundColor: '#3498db',
             borderWidth: 2,
             tension: 0.2,
-            yAxisID: 'yFatigue',
+            yAxisID: 'yEnergy',
             spanGaps: true
           },
           {
             type: 'bar',
             label: '⚡ MET-Punten',
             data: metData,
-            backgroundColor: 'rgba(74, 144, 226, 0.4)',
-            borderColor: '#4a90e2',
+            backgroundColor: 'rgba(230, 126, 34, 0.4)',
+            borderColor: '#e67e22',
             borderWidth: 1,
             yAxisID: 'yMET'
           }
@@ -514,14 +606,14 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          yFatigue: {
+          yEnergy: {
             type: 'linear',
             position: 'left',
             min: 1,
             max: 10,
             title: {
               display: true,
-              text: 'Vermoeidheid (1-10)',
+              text: 'Energie (1-10)',
               font: { size: 10 }
             },
             ticks: { stepSize: 2 }
@@ -553,6 +645,66 @@
     });
   }
 
+  /* --- Modal & Database Beheer --- */
+  function openDbModal() {
+    renderDbModalList();
+    document.getElementById('dbModal').style.display = 'flex';
+  }
+
+  function closeDbModal() {
+    document.getElementById('dbModal').style.display = 'none';
+    render();
+  }
+
+  function renderDbModalList() {
+    const container = document.getElementById('dbListContainer');
+    container.innerHTML = '';
+
+    trackerData.customDb.forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'db-item';
+      div.innerHTML = `
+        <div>
+          <button class="star-btn ${item.fav ? 'active' : ''}" onclick="toggleFav(${index})">★</button>
+          <strong>${item.name}</strong> <small style="color:#666;">(MET ${item.met})</small>
+        </div>
+        <button onclick="removeDbItem(${index})" class="btn-danger btn-small" style="padding:2px 6px;">X</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function toggleFav(index) {
+    trackerData.customDb[index].fav = !trackerData.customDb[index].fav;
+    saveData();
+    renderDbModalList();
+  }
+
+  function removeDbItem(index) {
+    if (confirm(`Verwijder "${trackerData.customDb[index].name}" uit de lijst?`)) {
+      trackerData.customDb.splice(index, 1);
+      saveData();
+      renderDbModalList();
+    }
+  }
+
+  function addNewDbItem() {
+    const name = document.getElementById('newDbName').value.trim();
+    const met = parseFloat(document.getElementById('newDbMet').value);
+
+    if (!name || isNaN(met)) {
+      alert('Vul een naam en een geldige MET-score in.');
+      return;
+    }
+
+    trackerData.customDb.push({ name: name, met: met, fav: true });
+    document.getElementById('newDbName').value = '';
+    document.getElementById('newDbMet').value = '';
+
+    saveData();
+    renderDbModalList();
+  }
+
   function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -568,8 +720,10 @@
     fileReader.onload = function(e) {
       try {
         const imported = JSON.parse(e.target.result);
-        if (imported.activities && imported.fatigueLogs) {
+        if (imported.activities) {
           trackerData = imported;
+          if (!trackerData.customDb) trackerData.customDb = defaultPresets;
+          if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
           saveData();
           alert('Data succesvol geïmporteerd!');
         } else {
@@ -587,7 +741,7 @@
   function clearAllData() {
     if (confirm("Weet je zeker dat je alle opgeslagen gegevens wilt wissen?")) {
       localStorage.removeItem('metTrackerData');
-      trackerData = { fatigueLogs: {}, activities: [] };
+      trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
       render();
       alert("Alle gegevens zijn gewist.");
     }
