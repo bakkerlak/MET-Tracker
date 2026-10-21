@@ -54,7 +54,7 @@
       font-weight: 600;
       font-size: 13px;
     }
-    input[type="text"], input[type="number"], input[type="date"], select {
+    input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
       width: 100%;
       padding: 8px 10px;
       margin-bottom: 8px;
@@ -170,7 +170,7 @@
       width: 100%;
     }
 
-    /* Modal Styling voor Database Beheer */
+    /* Modal Styling */
     .modal {
       display: none;
       position: fixed;
@@ -267,16 +267,28 @@
     
     <div class="flex-gap">
       <div style="flex: 1;">
+        <label for="startTime">Starttijd</label>
+        <input type="time" id="startTime">
+      </div>
+      <div style="flex: 1;">
         <label for="metVal">MET-score</label>
         <input type="number" id="metVal" step="0.1" placeholder="2.5">
       </div>
+    </div>
+
+    <label>Duur activiteit</label>
+    <div class="flex-gap">
       <div style="flex: 1;">
-        <label for="duration">Duur (min)</label>
-        <input type="number" id="duration" placeholder="30">
+        <input type="number" id="durHours" min="0" max="24" placeholder="0 uren" style="margin-bottom:4px;">
+        <span style="font-size:11px; color:#666;">Uren</span>
+      </div>
+      <div style="flex: 1;">
+        <input type="number" id="durMins" min="0" max="59" placeholder="30 min" style="margin-bottom:4px;">
+        <span style="font-size:11px; color:#666;">Minuten</span>
       </div>
     </div>
 
-    <div style="text-align: right;">
+    <div style="text-align: right; margin-top: 10px;">
       <button onclick="addActivity()" class="btn-small">Activiteit Opslaan</button>
     </div>
   </div>
@@ -315,7 +327,6 @@
     <h3>⚙️ Beheer MET-Lijst & Favorieten</h3>
     <p style="font-size:12px; color:#666;">Klik op het sterretje ⭐ om een activiteit als favoriet bovenaan te zetten.</p>
     
-    <!-- Nieuwe activiteit toevoegen aan DB -->
     <div style="background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:12px;">
       <label style="font-size:12px;">Nieuwe activiteit toevoegen:</label>
       <div class="flex-gap">
@@ -336,7 +347,6 @@
 <script>
   // Officiële MET-Database overgenomen uit de MET-methode meetinstructie
   const defaultPresets = [
-    // MET 1.0 - 1.5
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
     { name: "Zichzelf wassen / Scheren / Aankleden", met: 1.5, fav: true },
@@ -344,23 +354,17 @@
     { name: "TV kijken / Kaarten", met: 1.5, fav: false },
     { name: "Rechtop staan (15 min) / Naaiwerk", met: 1.5, fav: false },
     { name: "Licht bureauwerk / Typen", met: 1.5, fav: false },
-    
-    // MET 2.0
     { name: "Wagen besturen", met: 2.0, fav: true },
     { name: "Koken", met: 2.0, fav: true },
     { name: "Borstelen / Dweilen / Afstoffen", met: 2.0, fav: false },
     { name: "Muziek spelen (piano/gitaar) / Tekenen", met: 2.0, fav: false },
     { name: "Wandelen (2,5 km/u)", met: 2.0, fav: false },
-
-    // MET 3.0
     { name: "Bedden opmaken / Stofzuigen / Strijken", met: 3.0, fav: true },
     { name: "Meubilair boenen / Tuinieren", met: 3.0, fav: false },
     { name: "Boodschappen doen", met: 3.5, fav: true },
     { name: "Wandelen (3-4 km/u)", met: 3.0, fav: true },
     { name: "Fietsen (8 km/u)", met: 3.0, fav: false },
     { name: "Lichte gymnastiek / Bowling / Golfen", met: 3.0, fav: false },
-
-    // MET 4.0
     { name: "Douchen", met: 4.0, fav: true },
     { name: "Ruiten wassen / Vloer schrobben", met: 4.0, fav: false },
     { name: "Trappen afdalen", met: 4.0, fav: false },
@@ -368,16 +372,12 @@
     { name: "Wandelen (5 km/u)", met: 4.0, fav: true },
     { name: "Fietsen (10 km/u)", met: 4.0, fav: true },
     { name: "Zwemmen (schoolslag) / Badminton", met: 4.0, fav: false },
-
-    // MET 5.0 - 6.0
     { name: "Boodschappen met zware tas", met: 5.0, fav: false },
     { name: "Spitten in de tuin / Grasmaaien handmatig", met: 5.0, fav: false },
     { name: "Fietsen (12 km/u)", met: 5.0, fav: false },
     { name: "Wandelen (5,5 km/u)", met: 5.0, fav: false },
     { name: "Trappen oplopen", met: 6.0, fav: false },
     { name: "Tennis (enkel) / Basketbal / Voetbal", met: 6.0, fav: false },
-
-    // MET 7.0 - 10.0+
     { name: "Sneeuw ruimen / Hout klieven", met: 7.0, fav: false },
     { name: "Fietsen (15 km/u) / Wandelen (7,5 km/u)", met: 7.0, fav: false },
     { name: "Fietsen (19 km/u) / Joggen (8 km/u)", met: 8.0, fav: false },
@@ -393,7 +393,6 @@
     customDb: defaultPresets
   };
 
-  // Zorg dat de nieuwste officiële presets worden ingeladen bij een update
   if (!trackerData.customDb || trackerData.customDb.length < 20) {
     trackerData.customDb = defaultPresets;
   }
@@ -401,6 +400,11 @@
 
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
+  
+  // Zet standaard starttijd op de huidige tijd (HH:MM)
+  const now = new Date();
+  document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
+
   let historyChart = null;
 
   const energyMetaMap = {
@@ -486,28 +490,36 @@
 
   function addActivity() {
     const name = document.getElementById('actName').value;
+    const startTime = document.getElementById('startTime').value || "00:00";
     const met = parseFloat(document.getElementById('metVal').value);
-    const dur = parseInt(document.getElementById('duration').value);
+    
+    const hrs = parseInt(document.getElementById('durHours').value) || 0;
+    const mins = parseInt(document.getElementById('durMins').value) || 0;
+    const totalMinutes = (hrs * 60) + mins;
 
-    if (!name || isNaN(met) || isNaN(dur)) {
-      alert('Vul a.u.b. alle velden in.');
+    if (!name || isNaN(met) || totalMinutes <= 0) {
+      alert('Vul a.u.b. een naam, MET-score en een geldige duur (uren/minuten) in.');
       return;
     }
 
-    const points = (met * (dur / 60)).toFixed(1);
+    const points = (met * (totalMinutes / 60)).toFixed(1);
 
     trackerData.activities.push({
       id: Date.now(),
       date: currentDate,
+      time: startTime,
       name: name,
       met: met,
-      duration: dur,
+      hours: hrs,
+      minutes: mins,
+      duration: totalMinutes,
       points: parseFloat(points)
     });
 
     document.getElementById('actName').value = '';
     document.getElementById('metVal').value = '';
-    document.getElementById('duration').value = '';
+    document.getElementById('durHours').value = '';
+    document.getElementById('durMins').value = '';
     document.getElementById('presetSelect').value = '';
 
     saveData();
@@ -534,7 +546,10 @@
     });
 
     const list = document.getElementById('logList');
-    const dayActs = trackerData.activities.filter(a => a.date === currentDate);
+    // Sorteer op starttijd
+    const dayActs = trackerData.activities
+      .filter(a => a.date === currentDate)
+      .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
     if (dayActs.length === 0) {
       list.innerHTML = `<i>Geen activiteiten op ${currentDate}.</i>`;
@@ -544,11 +559,20 @@
       let total = 0;
       dayActs.forEach(a => {
         total += a.points;
+        
+        // Mooie duurnaamweergave (bijv. "1u 30m" of "45m")
+        let durStr = "";
+        if (a.hours && a.hours > 0) durStr += `${a.hours}u `;
+        if (a.minutes && a.minutes > 0) durStr += `${a.minutes}m`;
+        if (!durStr) durStr = `${a.duration}m`;
+
+        const timeDisplay = a.time ? `<span style="color:#e67e22; font-weight:bold;">${a.time}</span> - ` : '';
+
         html += `
           <div class="entry">
             <div>
-              <strong>${a.name}</strong><br>
-              <small>${a.duration} min | MET ${a.met}</small>
+              ${timeDisplay}<strong>${a.name}</strong><br>
+              <small>${durStr.trim()} | MET ${a.met}</small>
             </div>
             <div>
               <span class="badge">${a.points} ptn</span>
