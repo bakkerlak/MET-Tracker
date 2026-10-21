@@ -1,284 +1,275 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MET Score & Vermoeidheid Tracker</title>
-    <style>
-        :root {
-            --primary: #007AFF;
-            --bg: #F2F2F7;
-            --card-bg: #FFFFFF;
-            --text: #000000;
-            --text-secondary: #8E8E93;
-            --border: #C6C6C8;
-            --danger: #FF3B30;
-            --success: #34C759;
-            --warning: #FF9500;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
-        header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10; }
-        header h1 { font-size: 18px; font-weight: 600; }
-        .date-picker { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
-        .date-picker button { background: none; border: none; font-size: 18px; color: var(--primary); cursor: pointer; padding: 5px 10px; }
-        .date-picker input[type="date"] { border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; font-size: 14px; font-weight: 500; background: var(--bg); }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .fatigue-section { display: flex; flex-direction: column; gap: 12px; }
-        .fatigue-box { background: var(--bg); padding: 12px; border-radius: 10px; }
-        .fatigue-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
-        .fatigue-score { font-weight: 700; color: var(--primary); }
-        input[type="range"] { width: 100%; accent-color: var(--primary); margin-top: 4px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
-        .stat-item { background: var(--bg); padding: 10px; border-radius: 8px; }
-        .stat-val { font-size: 18px; font-weight: 700; color: var(--primary); }
-        .stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background: #fff; }
-        .btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .activity-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--bg); }
-        .activity-item:last-child { border-bottom: none; }
-        .act-title { font-weight: 600; font-size: 15px; }
-        .act-sub { font-size: 12px; color: var(--text-secondary); }
-        .act-score { font-weight: 700; color: var(--primary); font-size: 15px; text-align: right; }
-        nav.tabs { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
-        .tab-btn { background: none; border: none; color: var(--text-secondary); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 25%; }
-        .tab-btn.active { color: var(--primary); font-weight: 600; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>MET & Vermoeidheid Tracker</title>
+  <style>
+    :root {
+      --bg-color: #f4f4f9;
+      --card-bg: #ffffff;
+      --primary: #4a90e2;
+      --text: #333333;
+      --border: #dddddd;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0;
+      padding: 15px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    h2, h3 {
+      margin-top: 0;
+      color: #1a1a1a;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    button.btn-secondary {
+      background-color: #7f8c8d;
+    }
+    button.btn-danger {
+      background-color: var(--danger);
+    }
+    .flex-gap {
+      display: flex;
+      gap: 10px;
+    }
+    .flex-gap button {
+      margin-bottom: 0;
+    }
+    .entry {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .entry:last-child {
+      border-bottom: none;
+    }
+    .badge {
+      background: #e1f0ff;
+      color: var(--primary);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    #fileInput {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-    <h1>MET & Vermoeidheid Tracker</h1>
-    <div class="date-picker">
-        <button onclick="changeDate(-1)">❮</button>
-        <input type="date" id="currentDate" onchange="loadDayData()">
-        <button onclick="changeDate(1)">❯</button>
-    </div>
-</header>
-
 <div class="container">
-    <div id="tab-logbook" class="tab-content active">
-        <!-- Vermoeidheid Card -->
-        <div class="card">
-            <div class="card-title">
-                <span>Vermoeidheid Vandaag</span>
-                <span id="fatigueDiff" style="font-size: 12px; color: var(--text-secondary);">Δ: -</span>
-            </div>
-            <div class="fatigue-section">
-                <div class="fatigue-box">
-                    <div class="fatigue-header">
-                        <span>Ochtend (Begin van de dag)</span>
-                        <span class="fatigue-score" id="valMorning">5</span>
-                    </div>
-                    <input type="range" id="rangeMorning" min="1" max="10" value="5" oninput="updateFatigueUI()">
-                </div>
-                <div class="fatigue-box">
-                    <div class="fatigue-header">
-                        <span>Avond (Einde van de dag)</span>
-                        <span class="fatigue-score" id="valEvening">5</span>
-                    </div>
-                    <input type="range" id="rangeEvening" min="1" max="10" value="5" oninput="updateFatigueUI()">
-                </div>
-            </div>
-        </div>
+  <h2>MET & Vermoeidheid Tracker</h2>
 
-        <!-- Totaalscore Card -->
-        <div class="card">
-            <div class="card-title">Dagoverzicht MET-score</div>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-val" id="statMetHours">0.0</div>
-                    <div class="stat-lbl">MET-uren</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val" id="statMetMin">0</div>
-                    <div class="stat-lbl">MET-minuten</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val" id="statKcal">0</div>
-                    <div class="stat-lbl">Geschat kcal</div>
-                </div>
-            </div>
-        </div>
+  <!-- Vermoeidheid Score -->
+  <div class="card">
+    <h3>Vermoeidheid Vandaag</h3>
+    <label for="fatigue">Score (1 = fit, 10 = extreem moe): <span id="fatigueVal">5</span></label>
+    <input type="range" id="fatigue" min="1" max="10" value="5" oninput="document.getElementById('fatigueVal').innerText=this.value">
+    <button onclick="saveFatigue()">Vermoeidheid Opslaan</button>
+  </div>
 
-        <!-- Invoer Activiteit -->
-        <div class="card">
-            <div class="card-title">Activiteit Toevoegen</div>
-            <div class="form-group">
-                <label>Kies Activiteit</label>
-                <select id="selectActivity"></select>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Starttijd</label>
-                    <input type="time" id="inputStartTime">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Duur (minuten)</label>
-                    <input type="number" id="inputDuration" placeholder="30" value="30">
-                </div>
-            </div>
-            <button class="btn" onclick="addLoggedActivity()">Voeg Toe aan Dagboek</button>
-        </div>
+  <!-- MET Invoer -->
+  <div class="card">
+    <h3>Activiteit Toevoegen</h3>
+    <label for="actName">Activiteit</label>
+    <input type="text" id="actName" placeholder="bijv. Wandelen, Lezen, Koken">
+    
+    <label for="metVal">MET-score</label>
+    <input type="number" id="metVal" step="0.1" placeholder="bijv. 2.5">
+    
+    <label for="duration">Duur (minuten)</label>
+    <input type="number" id="duration" placeholder="bijv. 30">
 
-        <!-- Gelogde Activiteiten Lijst -->
-        <div class="card">
-            <div class="card-title">Gelogde Activiteiten</div>
-            <div id="loggedActivitiesList">Geen activiteiten gelogd.</div>
-        </div>
+    <button onclick="addActivity()">Activiteit Opslaan</button>
+  </div>
+
+  <!-- Dagoverzicht -->
+  <div class="card">
+    <h3>Logboek Vandaag</h3>
+    <div id="logList">Nog geen activiteiten ingevoerd.</div>
+    <p><strong>Totaal MET-punten: </strong><span id="totalMET">0</span></p>
+  </div>
+
+  <!-- Back-up & Beheer -->
+  <div class="card">
+    <h3>Back-up & Data Beheer</h3>
+    <div class="flex-gap">
+      <button onclick="exportData()" class="btn-secondary">Exporteer Data</button>
+      <button onclick="document.getElementById('fileInput').click()" class="btn-secondary">Importeer Data</button>
     </div>
-
-    <!-- Tab Database -->
-    <div id="tab-db" class="tab-content">
-        <div class="card">
-            <div class="card-title">Nieuwe Activiteit Toevoegen</div>
-            <div class="form-group">
-                <label>Naam Activiteit</label>
-                <input type="text" id="newActName" placeholder="Bijv. Wandelen stevig">
-            </div>
-            <div class="form-group">
-                <label>MET Score</label>
-                <input type="number" step="0.1" id="newActMet" placeholder="Bijv. 3.8">
-            </div>
-            <button class="btn" onclick="addDbActivity()">Opslaan in Database</button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Centrale Database</div>
-            <div id="dbList"></div>
-        </div>
-    </div>
+    <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
+  </div>
 </div>
 
-<nav class="tabs">
-    <button class="tab-btn active" onclick="switchTab('logbook')">📅 Logboek</button>
-    <button class="tab-btn" onclick="switchTab('db')">🗄️ Database</button>
-</nav>
-
 <script>
-    let db = JSON.parse(localStorage.getItem('met_db')) || [
-        { id: 1, name: 'Rusten / Slapen', met: 1.0 },
-        { id: 2, name: 'Zitten / Computerwerk', met: 1.5 },
-        { id: 3, name: 'Wandelen (rustig)', met: 2.8 },
-        { id: 4, name: 'Wandelen (stevig)', met: 3.8 },
-        { id: 5, name: 'Huishouden (licht)', met: 2.5 },
-        { id: 6, name: 'Fietsen (gemiddeld)', met: 5.8 }
-    ];
+  let trackerData = JSON.parse(localStorage.getItem('metTrackerData')) || {
+    fatigueLogs: {},
+    activities: []
+  };
 
-    let logs = JSON.parse(localStorage.getItem('met_logs')) || {};
-    let fatigue = JSON.parse(localStorage.getItem('met_fatigue')) || {};
+  const today = new Date().toISOString().split('T')[0];
 
-    document.getElementById('currentDate').value = new Date().toISOString().split('T')[0];
+  function saveData() {
+    localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
+    render();
+  }
 
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
+  function saveFatigue() {
+    const val = document.getElementById('fatigue').value;
+    trackerData.fatigueLogs[today] = val;
+    saveData();
+    alert('Vermoeidheidsscore opgeslagen!');
+  }
+
+  function addActivity() {
+    const name = document.getElementById('actName').value;
+    const met = parseFloat(document.getElementById('metVal').value);
+    const dur = parseInt(document.getElementById('duration').value);
+
+    if (!name || isNaN(met) || isNaN(dur)) {
+      alert('Vul a.u.b. alle velden correct in.');
+      return;
     }
 
-    function loadDayData() {
-        const date = document.getElementById('currentDate').value;
-        const dayFatigue = fatigue[date] || { morning: 5, evening: 5 };
-        
-        document.getElementById('rangeMorning').value = dayFatigue.morning;
-        document.getElementById('rangeEvening').value = dayFatigue.evening;
-        updateFatigueUI();
+    const points = (met * (dur / 60)).toFixed(1);
 
-        const dayLogs = logs[date] || [];
-        let totalMetMin = 0;
-        let listHtml = '';
+    trackerData.activities.push({
+      id: Date.now(),
+      date: today,
+      name: name,
+      met: met,
+      duration: dur,
+      points: parseFloat(points)
+    });
 
-        dayLogs.forEach((item, index) => {
-            const act = db.find(a => a.id === item.actId);
-            if (act) {
-                const metMin = act.met * item.duration;
-                totalMetMin += metMin;
-                listHtml += `
-                    <div class="activity-item">
-                        <div>
-                            <div class="act-title">${act.name}</div>
-                            <div class="act-sub">${item.startTime} - ${item.duration} min (MET: ${act.met})</div>
-                        </div>
-                        <div class="act-score">${metMin.toFixed(0)} score</div>
-                    </div>`;
-            }
-        });
+    document.getElementById('actName').value = '';
+    document.getElementById('metVal').value = '';
+    document.getElementById('duration').value = '';
 
-        document.getElementById('loggedActivitiesList').innerHTML = listHtml || 'Geen activiteiten gelogd op deze dag.';
-        document.getElementById('statMetHours').innerText = (totalMetMin / 60).toFixed(1);
-        document.getElementById('statMetMin').innerText = Math.round(totalMetMin);
-        document.getElementById('statKcal').innerText = Math.round((totalMetMin / 60) * 70);
+    saveData();
+  }
+
+  function deleteAct(id) {
+    trackerData.activities = trackerData.activities.filter(a => a.id !== id);
+    saveData();
+  }
+
+  function render() {
+    // Set fatigue for today if exists
+    if (trackerData.fatigueLogs[today]) {
+      document.getElementById('fatigue').value = trackerData.fatigueLogs[today];
+      document.getElementById('fatigueVal').innerText = trackerData.fatigueLogs[today];
     }
 
-    function updateFatigueUI() {
-        const m = document.getElementById('rangeMorning').value;
-        const e = document.getElementById('rangeEvening').value;
-        document.getElementById('valMorning').innerText = m;
-        document.getElementById('valEvening').innerText = e;
-        
-        const diff = e - m;
-        document.getElementById('fatigueDiff').innerText = `Δ: ${diff > 0 ? '+' + diff : diff} ${diff > 0 ? '(vermoeider)' : '(fitter)'}`;
+    // Render today activities
+    const list = document.getElementById('logList');
+    const todayActs = trackerData.activities.filter(a => a.date === today);
 
-        const date = document.getElementById('currentDate').value;
-        fatigue[date] = { morning: parseInt(m), evening: parseInt(e) };
-        localStorage.setItem('met_fatigue', JSON.stringify(fatigue));
+    if (todayActs.length === 0) {
+      list.innerHTML = '<i>Nog geen activiteiten ingevoerd voor vandaag.</i>';
+      document.getElementById('totalMET').innerText = '0';
+      return;
     }
 
-    function populateDbSelect() {
-        const select = document.getElementById('selectActivity');
-        select.innerHTML = '';
-        db.forEach(act => {
-            select.innerHTML += `<option value="${act.id}">${act.name} (MET: ${act.met})</option>`;
-        });
-        
-        let dbListHtml = '';
-        db.forEach(act => {
-            dbListHtml += `<div class="activity-item"><div class="act-title">${act.name}</div><div class="act-score">MET: ${act.met}</div></div>`;
-        });
-        document.getElementById('dbList').innerHTML = dbListHtml;
-    }
+    let html = '';
+    let total = 0;
 
-    function addLoggedActivity() {
-        const date = document.getElementById('currentDate').value;
-        const actId = parseInt(document.getElementById('selectActivity').value);
-        const startTime = document.getElementById('inputStartTime').value || '12:00';
-        const duration = parseInt(document.getElementById('inputDuration').value) || 30;
+    todayActs.forEach(a => {
+      total += a.points;
+      html += `
+        <div class="entry">
+          <div>
+            <strong>${a.name}</strong><br>
+            <small>${a.duration} min | MET ${a.met}</small>
+          </div>
+          <div>
+            <span class="badge">${a.points} ptn</span>
+            <button onclick="deleteAct(${a.id})" class="btn-danger" style="width:auto; padding:4px 8px; margin:0 0 0 5px;">X</button>
+          </div>
+        </div>
+      `;
+    });
 
-        if (!logs[date]) logs[date] = [];
-        logs[date].push({ actId, startTime, duration });
-        localStorage.setItem('met_logs', JSON.stringify(logs));
-        loadDayData();
-    }
+    list.innerHTML = html;
+    document.getElementById('totalMET').innerText = total.toFixed(1);
+  }
 
-    function addDbActivity() {
-        const name = document.getElementById('newActName').value;
-        const met = parseFloat(document.getElementById('newActMet').value);
-        if (name && met) {
-            db.push({ id: Date.now(), name, met });
-            localStorage.setItem('met_db', JSON.stringify(db));
-            populateDbSelect();
-            document.getElementById('newActName').value = '';
-            document.getElementById('newActMet').value = '';
+  // --- Export & Import functionaliteit ---
+  function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `met_tracker_backup_${today}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function importData(event) {
+    const fileReader = new FileReader();
+    fileReader.onload = function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (imported.activities && imported.fatigueLogs) {
+          trackerData = imported;
+          saveData();
+          alert('Data succesvol geïmporteerd!');
+        } else {
+          alert('Ongeldig back-up bestand.');
         }
+      } catch (err) {
+        alert('Fout bij het lezen van het bestand.');
+      }
+    };
+    if (event.target.files[0]) {
+      fileReader.readAsText(event.target.files[0]);
     }
+  }
 
-    function changeDate(days) {
-        const dateInput = document.getElementById('currentDate');
-        const d = new Date(dateInput.value);
-        d.setDate(d.getDate() + days);
-        dateInput.value = d.toISOString().split('T')[0];
-        loadDayData();
-    }
-
-    populateDbSelect();
-    loadDayData();
+  render();
 </script>
+
 </body>
 </html>
