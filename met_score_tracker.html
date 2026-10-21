@@ -679,7 +679,10 @@
       d.setDate(d.getDate() - i);
       let dStr = d.toISOString().split('T')[0];
       dates.push(dStr);
-      labels.push(dStr.slice(5));
+      
+      // Converteer 'YYYY-MM-DD' naar 'DD-MM' voor de weergave
+      const dateParts = dStr.split('-');
+      labels.push(dateParts[2] + '-' + dateParts[1]);
 
       const eLog = trackerData.energyLogs[dStr] || {};
       ochtendData.push(eLog.ochtend ? parseFloat(eLog.ochtend) : null);
@@ -788,7 +791,6 @@
   function closeDbModal() {
     document.getElementById('dbModal').style.display = 'none';
     
-    // Reset velden voor de zekerheid als het venster sluit
     currentDbEditIndex = null;
     document.getElementById('newDbName').value = '';
     document.getElementById('newDbMet').value = '';
@@ -858,18 +860,15 @@
     }
 
     if (currentDbEditIndex !== null) {
-      // Bewerk bestaande DB item
       trackerData.customDb[currentDbEditIndex].name = name;
       trackerData.customDb[currentDbEditIndex].met = met;
       
-      // Reset modus
       currentDbEditIndex = null;
       document.getElementById('dbFormLabel').innerText = "Nieuwe activiteit toevoegen:";
       const btn = document.getElementById('saveDbBtn');
       btn.innerText = "+";
       btn.style.backgroundColor = "var(--primary)";
     } else {
-      // Voeg nieuwe toe
       trackerData.customDb.push({ name: name, met: met, fav: true });
     }
 
