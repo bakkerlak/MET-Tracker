@@ -36,6 +36,9 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       transition: background-color 0.3s ease;
     }
+    .card-highlight {
+      border: 2px solid var(--primary);
+    }
     h2, h3 {
       margin-top: 0;
       color: #1a1a1a;
@@ -121,9 +124,15 @@
 <div class="container">
   <h2>MET & Vermoeidheid Tracker</h2>
 
+  <!-- Datum Selectie -->
+  <div class="card card-highlight">
+    <label for="selectedDate">📅 Selecteer Datum (voor invoer/terugkijken):</label>
+    <input type="date" id="selectedDate" onchange="changeDate()">
+  </div>
+
   <!-- Vermoeidheid Scores (Begin & Einde Dag) -->
   <div class="card">
-    <h3>Vermoeidheid Vandaag</h3>
+    <h3>Vermoeidheid op <span class="dateDisplay"></span></h3>
 
     <!-- Begin van de dag -->
     <div class="fatigue-card" id="cardOchtend">
@@ -139,12 +148,12 @@
       <div class="fatigue-meta" id="metaAvond">🟢 Fit / Normale energie</div>
     </div>
 
-    <button onclick="saveFatigue()">Scores Opslaan</button>
+    <button onclick="saveFatigue()">Scores Opslaan voor Datum</button>
   </div>
 
   <!-- MET Invoer -->
   <div class="card">
-    <h3>Activiteit Toevoegen</h3>
+    <h3>Activiteit Toevoegen op <span class="dateDisplay"></span></h3>
     <label for="actName">Activiteit</label>
     <input type="text" id="actName" placeholder="bijv. Wandelen, Lezen, Koken">
     
@@ -159,10 +168,10 @@
 
   <!-- Dagoverzicht & Logboek -->
   <div class="card">
-    <h3>Logboek Vandaag</h3>
+    <h3>Logboek <span class="dateDisplay"></span></h3>
     <div id="logList">Nog geen activiteiten ingevoerd.</div>
     <hr style="border:none; border-top:1px solid #ddd; margin: 12px 0;">
-    <p style="margin:0;"><strong>Totaal MET-punten vandaag: </strong><span id="totalMET" style="font-size:18px; color:var(--primary);">0</span></p>
+    <p style="margin:0;"><strong>Totaal MET-punten deze dag: </strong><span id="totalMET" style="font-size:18px; color:var(--primary);">0</span></p>
   </div>
 
   <!-- Database & Statistieken -->
@@ -196,7 +205,8 @@
     activities: []
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  let currentDate = new Date().toISOString().split('T')[0];
+  document.getElementById('selectedDate').value = currentDate;
 
   const fatigueMetaMap = {
     1: { text: "🟢 1 - Fit / Volledige energie", color: "#2ecc71" },
@@ -210,6 +220,11 @@
     9: { text: "🟣 9 - Extreem uitgeput / Platliggen", color: "#8e44ad" },
     10: { text: "🟣 10 - Maximale uitputting / Crash", color: "#6c3483" }
   };
+
+  function changeDate() {
+    currentDate = document.getElementById('selectedDate').value;
+    render();
+  }
 
   function updateMeta(type, val) {
     document.getElementById('val' + type).innerText = val;
@@ -228,14 +243,14 @@
   }
 
   function saveFatigue() {
-    if (!trackerData.fatigueLogs[today]) {
-      trackerData.fatigueLogs[today] = {};
+    if (!trackerData.fatigueLogs[currentDate]) {
+      trackerData.fatigueLogs[currentDate] = {};
     }
-    trackerData.fatigueLogs[today].ochtend = document.getElementById('fOchtend').value;
-    trackerData.fatigueLogs[today].avond = document.getElementById('fAvond').value;
+    trackerData.fatigueLogs[currentDate].ochtend = document.getElementById('fOchtend').value;
+    trackerData.fatigueLogs[currentDate].avond = document.getElementById('fAvond').value;
     
     saveData();
-    alert('Vermoeidheidsscores opgeslagen!');
+    alert(`Vermoeidheidsscores voor ${currentDate} opgeslagen!`);
   }
 
   function addActivity() {
@@ -252,7 +267,7 @@
 
     trackerData.activities.push({
       id: Date.now(),
-      date: today,
+      date: currentDate,
       name: name,
       met: met,
       duration: dur,
@@ -272,8 +287,13 @@
   }
 
   function render() {
-    // Laad vermoeidheid vandaag
-    const fToday = trackerData.fatigueLogs[today] || {};
+    // Update datum weergave op kaarten
+    document.querySelectorAll('.dateDisplay').forEach(el => {
+      el.innerText = currentDate;
+    });
+
+    // Laad vermoeidheid voor geselecteerde datum
+    const fToday = trackerData.fatigueLogs[currentDate] || {};
     ['Ochtend', 'Avond'].forEach(type => {
       const key = type.toLowerCase();
       const val = fToday[key] || 1;
@@ -281,17 +301,17 @@
       updateMeta(type, val);
     });
 
-    // Render Logboek Vandaag
+    // Render Logboek voor geselecteerde datum
     const list = document.getElementById('logList');
-    const todayActs = trackerData.activities.filter(a => a.date === today);
+    const dayActs = trackerData.activities.filter(a => a.date === currentDate);
 
-    if (todayActs.length === 0) {
-      list.innerHTML = '<i>Nog geen activiteiten ingevoerd voor vandaag.</i>';
+    if (dayActs.length === 0) {
+      list.innerHTML = `<i>Nog geen activiteiten ingevoerd voor ${currentDate}.</i>`;
       document.getElementById('totalMET').innerText = '0';
     } else {
       let html = '';
       let total = 0;
-      todayActs.forEach(a => {
+      dayActs.forEach(a => {
         total += a.points;
         html += `
           <div class="entry">
@@ -342,7 +362,7 @@
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `met_tracker_backup_${today}.json`);
+    downloadAnchor.setAttribute("download", `met_tracker_backup_${currentDate}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
