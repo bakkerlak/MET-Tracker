@@ -110,7 +110,7 @@
     .energy-card {
       border-left: 6px solid #2ecc71;
       margin-bottom: 8px;
-      padding: 8px 10px;
+      padding: 10px;
       background: #fafafa;
       border-radius: 6px;
     }
@@ -126,7 +126,7 @@
       height: 6px;
       background: #e0e0e0;
       border-radius: 3px;
-      margin: 6px 0;
+      margin: 8px 0;
       outline: none;
     }
     input[type="range"]::-webkit-slider-thumb {
@@ -268,20 +268,22 @@
 
     <!-- Ochtend -->
     <div class="energy-card" id="cardOchtend">
-      <label for="eOchtend">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <label for="eOchtend" style="margin-bottom: 0;">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
+        <button onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 4px 10px; font-size: 12px;">Opslaan</button>
+      </div>
       <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
       <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
     </div>
 
     <!-- Avond -->
     <div class="energy-card" id="cardAvond">
-      <label for="eAvond">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <label for="eAvond" style="margin-bottom: 0;">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
+        <button onclick="saveEnergy('avond')" class="btn-small" style="padding: 4px 10px; font-size: 12px;">Opslaan</button>
+      </div>
       <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
       <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
-    </div>
-
-    <div style="text-align: right; margin-top: 8px;">
-      <button onclick="saveEnergy()" class="btn-small">Opslaan</button>
     </div>
   </div>
 
@@ -443,7 +445,7 @@
 
   let historyChart = null;
   let currentEditId = null;
-  let currentDbEditIndex = null; // Voor het bewerken van de MET-Database
+  let currentDbEditIndex = null; 
 
   const energyMetaMap = {
     10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
@@ -515,15 +517,23 @@
     render();
   }
 
-  function saveEnergy() {
+  function saveEnergy(type) {
     if (!trackerData.energyLogs[currentDate]) {
       trackerData.energyLogs[currentDate] = {};
     }
-    trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
-    trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
     
-    saveData();
-    alert(`Energieniveau opgeslagen voor ${currentDate}`);
+    if (type === 'ochtend') {
+      trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
+      alert(`Ochtend energieniveau opgeslagen voor ${currentDate}`);
+    } else if (type === 'avond') {
+      trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
+      alert(`Avond energieniveau opgeslagen voor ${currentDate}`);
+    }
+    
+    // Alleen lokaal opslaan en de grafiek updaten om te voorkomen 
+    // dat we de onopgeslagen waarde van de andere schuif resetten.
+    localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
+    renderChart(); 
   }
 
   function addOrUpdateActivity() {
@@ -680,7 +690,6 @@
       let dStr = d.toISOString().split('T')[0];
       dates.push(dStr);
       
-      // Converteer 'YYYY-MM-DD' naar 'DD-MM' voor de weergave
       const dateParts = dStr.split('-');
       labels.push(dateParts[2] + '-' + dateParts[1]);
 
