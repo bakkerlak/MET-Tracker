@@ -110,7 +110,7 @@
     .energy-card {
       border-left: 6px solid #2ecc71;
       margin-bottom: 8px;
-      padding: 10px;
+      padding: 8px 10px;
       background: #fafafa;
       border-radius: 6px;
     }
@@ -126,7 +126,7 @@
       height: 6px;
       background: #e0e0e0;
       border-radius: 3px;
-      margin: 8px 0;
+      margin: 6px 0;
       outline: none;
     }
     input[type="range"]::-webkit-slider-thumb {
@@ -343,7 +343,14 @@
 
   <!-- Grafiek Afgelopen 7 Dagen -->
   <div class="card">
-    <h3>📈 Grafiek Afgelopen 7 Dagen</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <h3 style="margin: 0;">📈 Grafiek</h3>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <button onclick="shiftChart(-1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">◀</button>
+        <span id="chartEndDisplay" style="font-size: 13px; font-weight: bold; min-width: 45px; text-align: center;"></span>
+        <button onclick="shiftChart(1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">▶</button>
+      </div>
+    </div>
     <div class="chart-container">
       <canvas id="historyChart"></canvas>
     </div>
@@ -437,9 +444,13 @@
   }
   if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
 
+  // Logboek en algemene weergave
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   
+  // Onafhankelijke einddatum specifiek voor de grafiek (standaard vandaag)
+  let chartEndDate = new Date().toISOString().split('T')[0];
+
   const now = new Date();
   document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
 
@@ -499,6 +510,14 @@
     render();
   }
 
+  // Nieuwe onafhankelijke grafieknavigatie
+  function shiftChart(offset) {
+    let d = new Date(chartEndDate);
+    d.setDate(d.getDate() + offset);
+    chartEndDate = d.toISOString().split('T')[0];
+    renderChart();
+  }
+
   function updateMeta(type, val) {
     document.getElementById('val' + type).innerText = val;
     const meta = energyMetaMap[val] || energyMetaMap[10];
@@ -530,8 +549,6 @@
       alert(`Avond energieniveau opgeslagen voor ${currentDate}`);
     }
     
-    // Alleen lokaal opslaan en de grafiek updaten om te voorkomen 
-    // dat we de onopgeslagen waarde van de andere schuif resetten.
     localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
     renderChart(); 
   }
@@ -682,7 +699,11 @@
     let avondData = [];
     let metData = [];
 
-    let baseDate = new Date(currentDate);
+    let baseDate = new Date(chartEndDate);
+
+    // Update het navigatie-label van de grafiek zelf
+    const endParts = chartEndDate.split('-');
+    document.getElementById('chartEndDisplay').innerText = endParts[2] + '-' + endParts[1];
 
     for (let i = 6; i >= 0; i--) {
       let d = new Date(baseDate);
