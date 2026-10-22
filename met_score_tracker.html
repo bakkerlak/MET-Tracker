@@ -73,6 +73,10 @@
       padding: 8px 14px;
       font-size: 14px;
       cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    button:active {
+      transform: scale(0.96);
     }
     .btn-small {
       width: auto;
@@ -262,7 +266,7 @@
     </div>
   </div>
 
-  <!-- Energieniveau Scores (10 = Vol, 1 = Leeg) -->
+  <!-- Energieniveau Scores -->
   <div class="card">
     <h3>Energieniveau op <span class="dateDisplay"></span></h3>
 
@@ -270,7 +274,7 @@
     <div class="energy-card" id="cardOchtend">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
         <label for="eOchtend" style="margin-bottom: 0;">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
-        <button onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 4px 10px; font-size: 12px;">Opslaan</button>
+        <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
       </div>
       <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
       <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
@@ -280,7 +284,7 @@
     <div class="energy-card" id="cardAvond">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
         <label for="eAvond" style="margin-bottom: 0;">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
-        <button onclick="saveEnergy('avond')" class="btn-small" style="padding: 4px 10px; font-size: 12px;">Opslaan</button>
+        <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
       </div>
       <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
       <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
@@ -444,11 +448,9 @@
   }
   if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
 
-  // Logboek en algemene weergave
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   
-  // Onafhankelijke einddatum specifiek voor de grafiek (standaard vandaag)
   let chartEndDate = new Date().toISOString().split('T')[0];
 
   const now = new Date();
@@ -510,7 +512,6 @@
     render();
   }
 
-  // Nieuwe onafhankelijke grafieknavigatie
   function shiftChart(offset) {
     let d = new Date(chartEndDate);
     d.setDate(d.getDate() + offset);
@@ -529,6 +530,13 @@
     card.style.borderLeftColor = meta.color;
 
     document.documentElement.style.setProperty(`--thumb-${type.toLowerCase()}`, meta.color);
+
+    // Bij het verschuiven van de balk altijd resetten naar 'Opslaan'
+    const btn = document.getElementById('btnSave' + type);
+    if (btn && btn.innerText !== "Opslaan") {
+      btn.innerText = "Opslaan";
+      btn.style.backgroundColor = "var(--primary)";
+    }
   }
 
   function saveData() {
@@ -541,16 +549,23 @@
       trackerData.energyLogs[currentDate] = {};
     }
     
+    let btn;
     if (type === 'ochtend') {
       trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
-      alert(`Ochtend energieniveau opgeslagen voor ${currentDate}`);
+      btn = document.getElementById('btnSaveOchtend');
     } else if (type === 'avond') {
       trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
-      alert(`Avond energieniveau opgeslagen voor ${currentDate}`);
+      btn = document.getElementById('btnSaveAvond');
     }
     
     localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
     renderChart(); 
+    
+    // Geef visuele bevestiging door het vinkje te tonen
+    if (btn) {
+      btn.innerText = "✓";
+      btn.style.backgroundColor = "#2ecc71"; // Groen
+    }
   }
 
   function addOrUpdateActivity() {
@@ -645,9 +660,20 @@
     const eToday = trackerData.energyLogs[currentDate] || {};
     ['Ochtend', 'Avond'].forEach(type => {
       const key = type.toLowerCase();
-      const val = eToday[key] || 10;
+      const savedVal = eToday[key];
+      const val = savedVal || 10;
+      
       document.getElementById('e' + type).value = val;
-      updateMeta(type, val);
+      updateMeta(type, val); // updateMeta zal knop standaard op 'Opslaan' zetten
+      
+      // Als we een opgeslagen waarde hebben geladen, toon dan het vinkje
+      if (savedVal !== undefined) {
+        const btn = document.getElementById('btnSave' + type);
+        if (btn) {
+          btn.innerText = "✓";
+          btn.style.backgroundColor = "#2ecc71";
+        }
+      }
     });
 
     const list = document.getElementById('logList');
@@ -701,7 +727,6 @@
 
     let baseDate = new Date(chartEndDate);
 
-    // Update het navigatie-label van de grafiek zelf
     const endParts = chartEndDate.split('-');
     document.getElementById('chartEndDisplay').innerText = endParts[2] + '-' + endParts[1];
 
