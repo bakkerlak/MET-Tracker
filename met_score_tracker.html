@@ -258,7 +258,9 @@
 
   <!-- Datum Selectie -->
   <div class="card">
-    <label>📅 Datum selecteren:</label>
+    <label style="text-align: center; font-size: 15px; color: var(--primary); margin-bottom: 8px;">
+      📅 <span class="dateDisplay"></span>
+    </label>
     <div class="date-nav">
       <button onclick="shiftDate(-1)">◀</button>
       <input type="date" id="selectedDate" onchange="changeDate()">
@@ -268,7 +270,7 @@
 
   <!-- Energieniveau Scores -->
   <div class="card">
-    <h3>Energieniveau op <span class="dateDisplay"></span></h3>
+    <h3 style="margin-bottom: 12px;">Energieniveau</h3>
 
     <!-- Ochtend -->
     <div class="energy-card" id="cardOchtend">
@@ -339,7 +341,7 @@
 
   <!-- Dagoverzicht & Logboek -->
   <div class="card">
-    <h3>Logboek <span class="dateDisplay"></span></h3>
+    <h3 style="margin-bottom: 12px;">Logboek <br><span class="dateDisplay" style="font-size: 14px; font-weight: normal; color: var(--primary);"></span></h3>
     <div id="logList">Nog geen activiteiten ingevoerd.</div>
     <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
     <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
@@ -531,7 +533,6 @@
 
     document.documentElement.style.setProperty(`--thumb-${type.toLowerCase()}`, meta.color);
 
-    // Bij het verschuiven van de balk altijd resetten naar 'Opslaan'
     const btn = document.getElementById('btnSave' + type);
     if (btn && btn.innerText !== "Opslaan") {
       btn.innerText = "Opslaan";
@@ -561,10 +562,9 @@
     localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
     renderChart(); 
     
-    // Geef visuele bevestiging door het vinkje te tonen
     if (btn) {
       btn.innerText = "✓";
-      btn.style.backgroundColor = "#2ecc71"; // Groen
+      btn.style.backgroundColor = "#2ecc71";
     }
   }
 
@@ -651,8 +651,14 @@
   }
 
   function render() {
+    // Formatteer de datum netjes naar "Woensdag 4 november 2026"
+    const [yyyy, mm, dd] = currentDate.split('-');
+    const dObj = new Date(yyyy, mm - 1, dd);
+    const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const displayDate = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+
     document.querySelectorAll('.dateDisplay').forEach(el => {
-      el.innerText = currentDate;
+      el.innerText = displayDate;
     });
 
     renderPresetDropdown();
@@ -664,9 +670,8 @@
       const val = savedVal || 10;
       
       document.getElementById('e' + type).value = val;
-      updateMeta(type, val); // updateMeta zal knop standaard op 'Opslaan' zetten
+      updateMeta(type, val); 
       
-      // Als we een opgeslagen waarde hebben geladen, toon dan het vinkje
       if (savedVal !== undefined) {
         const btn = document.getElementById('btnSave' + type);
         if (btn) {
@@ -682,7 +687,7 @@
       .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
     if (dayActs.length === 0) {
-      list.innerHTML = `<i>Geen activiteiten op ${currentDate}.</i>`;
+      list.innerHTML = `<i>Geen activiteiten ingevoerd op deze dag.</i>`;
       document.getElementById('totalMET').innerText = '0';
     } else {
       let html = '';
@@ -837,7 +842,6 @@
     });
   }
 
-  /* --- MET Database Beheer & Modal --- */
   function openDbModal() {
     renderDbModalList();
     document.getElementById('dbModal').style.display = 'flex';
