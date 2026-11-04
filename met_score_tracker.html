@@ -278,7 +278,7 @@
 <div class="container">
   <h2>MET & Energie Tracker</h2>
 
-  <!-- Datum Selectie: alleen tussen de pijltjes -->
+  <!-- Datum Selectie (Met indicator stip) -->
   <div class="card">
     <div class="date-nav">
       <button onclick="shiftDate(-1)">◀</button>
@@ -363,7 +363,10 @@
 
   <!-- Dagoverzicht & Logboek -->
   <div class="card">
-    <h3 style="margin-bottom: 12px;">Logboek <br><span class="logDateSubtitle" style="font-size: 13px; font-weight: normal; color: var(--primary);"></span></h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0;">Logboek <br><span class="logDateSubtitle" style="font-size: 13px; font-weight: normal; color: var(--primary);"></span></h3>
+      <button onclick="openCopyModal()" class="btn-secondary btn-small" style="font-size: 12px; padding: 4px 8px;">📄 Kopieer Dag</button>
+    </div>
     <div id="logList">Nog geen activiteiten ingevoerd.</div>
     <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
     <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
@@ -415,6 +418,20 @@
 
     <div style="text-align: right; margin-top: 12px;">
       <button onclick="closeDbModal()" class="btn-small">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal voor Kopiëren van Dagen -->
+<div class="modal" id="copyModal">
+  <div class="modal-content">
+    <h3>📄 Kopieer Activiteiten</h3>
+    <p style="font-size:12px; color:#666;">Kies een eerdere dag met activiteiten (aangegeven met een ●) om deze in hun geheel naar vandaag te kopiëren.</p>
+    
+    <div id="copyListContainer" style="margin-top: 12px; max-height: 50vh; overflow-y: auto;"></div>
+
+    <div style="text-align: right; margin-top: 12px;">
+      <button onclick="closeCopyModal()" class="btn-secondary btn-small">Annuleren</button>
     </div>
   </div>
 </div>
@@ -675,13 +692,15 @@
   function render() {
     const [yyyy, mm, dd] = currentDate.split('-');
     const dObj = new Date(yyyy, mm - 1, dd);
-    const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
     const fullDateString = dObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     
-    // Alleen tussen de pijltjes (compact met korte dag/maand)
-    document.getElementById('centerDateDisplay').innerText = dateString;
+    // Check of deze dag activiteiten heeft voor de blauwe stip (●)
+    const hasData = trackerData.activities.some(a => a.date === currentDate);
+    const dotHtml = hasData ? `<span style="color: #4a90e2; margin-right:4px;">●</span>` : '';
     
-    // In het logboek voluit
+    document.getElementById('centerDateDisplay').innerHTML = dotHtml + dateString;
+    
     const logDateText = fullDateString.charAt(0).toUpperCase() + fullDateString.slice(1);
     document.querySelectorAll('.logDateSubtitle').forEach(el => {
       el.innerText = logDateText;
@@ -868,7 +887,7 @@
     });
   }
 
-  /* --- MET Database Beheer & Modal --- */
+  /* --- MET Database Beheer --- */
   function openDbModal() {
     renderDbModalList();
     document.getElementById('dbModal').style.display = 'flex';
@@ -965,6 +984,66 @@
     renderDbModalList();
   }
 
+  /* --- Kopiëren van Dagen --- */
+  function openCopyModal() {
+    const container = document.getElementById('copyListContainer');
+    container.innerHTML = '';
+
+    // Haal alle unieke datums op waar activiteiten voor geregistreerd staan
+    const datesWithActivities = [...new Set(trackerData.activities.map(a => a.date))];
+    const availableDates = datesWithActivities.filter(d => d !== currentDate).sort((a, b) => b.localeCompare(a));
+
+    if (availableDates.length === 0) {
+      container.innerHTML = '<p style="font-size:13px; color:#666;">Je hebt nog geen eerdere dagen met activiteiten geregistreerd.</p>';
+    } else {
+      availableDates.forEach(dStr => {
+        const acts = trackerData.activities.filter(a => a.date === dStr);
+        const points = acts.reduce((sum, a) => sum + a.points, 0).toFixed(1);
+        
+        const [yyyy, mm, dd] = dStr.split('-');
+        const dObj = new Date(yyyy, mm - 1, dd);
+        const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+        const div = document.createElement('div');
+        div.className = 'db-item';
+        div.style.cursor = 'pointer';
+        div.onclick = () => copyActivities(dStr);
+        div.innerHTML = `
+          <div>
+            <span style="color: #4a90e2; font-size: 11px; margin-right: 6px;">●</span>
+            <strong>${dateString}</strong> <br>
+            <small style="color:#666; margin-left:18px;">(${acts.length} act. / ${points} ptn)</small>
+          </div>
+          <button class="btn-primary btn-small" style="padding:4px 8px; background-color: var(--primary); border:none; color:white; border-radius:4px;">Kopieer</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+    document.getElementById('copyModal').style.display = 'flex';
+  }
+
+  function closeCopyModal() {
+    document.getElementById('copyModal').style.display = 'none';
+  }
+
+  function copyActivities(sourceDate) {
+    const actsToCopy = trackerData.activities.filter(a => a.date === sourceDate);
+    
+    // Voeg gekopieerde activiteiten toe met een nieuwe ID en de huidige geselecteerde datum
+    actsToCopy.forEach((act, index) => {
+      trackerData.activities.push({
+        ...act,
+        id: Date.now() + index, // Nieuwe unieke ID
+        date: currentDate
+      });
+    });
+    
+    saveData();
+    closeCopyModal();
+    alert(`Activiteiten succesvol gekopieerd naar vandaag!`);
+  }
+
+  /* --- Data Beheer --- */
   function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
     const downloadAnchor = document.createElement('a');
