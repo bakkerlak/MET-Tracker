@@ -1,3 +1,5 @@
+De regel met "🗓️ Woensdag 4 november 2026" boven de knoppenbalk is nu volledig weggehaald. De uitgeschreven datum met dag en datum staat nu uitsluitend en direct als knop tussen de twee pijltjes.
+Hier is de volledige code:
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -113,9 +115,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--primary);
+      text-align: center;
+      padding: 0 4px;
+      box-sizing: border-box;
     }
     .date-picker-wrapper input[type="date"] {
       position: absolute;
@@ -275,19 +280,19 @@
 <div class="container">
   <h2>MET & Energie Tracker</h2>
 
-  <!-- Datum Selectie -->
+  <!-- Datum Selectie: alleen tussen de pijltjes -->
   <div class="card">
     <div class="date-nav">
       <button onclick="shiftDate(-1)">◀</button>
       <div class="date-picker-wrapper">
-        <span style="margin-right: 6px;">📅</span><span class="dateDisplay"></span>
+        <span id="centerDateDisplay"></span>
         <input type="date" id="selectedDate" onchange="changeDate()">
       </div>
       <button onclick="shiftDate(1)">▶</button>
     </div>
   </div>
 
-  <!-- Energieniveau Scores (10 = Vol, 1 = Leeg) -->
+  <!-- Energieniveau Scores -->
   <div class="card">
     <h3 style="margin-bottom: 12px;">Energieniveau</h3>
 
@@ -360,7 +365,7 @@
 
   <!-- Dagoverzicht & Logboek -->
   <div class="card">
-    <h3 style="margin-bottom: 12px;">Logboek <br><span class="dateDisplay" style="font-size: 14px; font-weight: normal; color: var(--primary);"></span></h3>
+    <h3 style="margin-bottom: 12px;">Logboek <br><span class="logDateSubtitle" style="font-size: 13px; font-weight: normal; color: var(--primary);"></span></h3>
     <div id="logList">Nog geen activiteiten ingevoerd.</div>
     <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
     <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
@@ -672,11 +677,16 @@
   function render() {
     const [yyyy, mm, dd] = currentDate.split('-');
     const dObj = new Date(yyyy, mm - 1, dd);
-    const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    const displayDate = dateString.charAt(0).toUpperCase() + dateString.slice(1);
-
-    document.querySelectorAll('.dateDisplay').forEach(el => {
-      el.innerText = displayDate;
+    const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const fullDateString = dObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    
+    // Alleen tussen de pijltjes (compact met korte dag/maand)
+    document.getElementById('centerDateDisplay').innerText = dateString;
+    
+    // In het logboek voluit
+    const logDateText = fullDateString.charAt(0).toUpperCase() + fullDateString.slice(1);
+    document.querySelectorAll('.logDateSubtitle').forEach(el => {
+      el.innerText = logDateText;
     });
 
     renderPresetDropdown();
@@ -1004,3 +1014,4 @@
 
 </body>
 </html>
+
