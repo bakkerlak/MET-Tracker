@@ -7,6 +7,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MET & Energie Tracker</title>
   
+  <!-- Koppel het app-icoon voor het iOS beginscherm -->
+  <link rel="apple-touch-icon" href="icoon.jpg">
+  
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
@@ -491,7 +494,6 @@
     { name: "Wagen besturen", met: 2.0, fav: true },
     { name: "Wandelen (3-4 km/u)", met: 3.0, fav: true },
     { name: "Fietsen (10 km/u)", met: 4.0, fav: true }
-    // De app vult ontbrekende presets zelf aan indien nodig
   ];
 
   let trackerData = {
@@ -524,8 +526,7 @@
     1:  { text: "🟣 1 - Crash", color: "#6c3483" }
   };
 
-  // 3. AUTHENTICATIE LOGICA
-  // HIER IS DE FIX: signInWithPopup in plaats van Redirect
+  // 3. AUTHENTICATIE LOGICA (Popup in plaats van Redirect voor iOS)
   function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch((error) => {
@@ -546,20 +547,17 @@
       document.getElementById('appContainer').style.display = 'block';
       
       try {
-        // Haal cloud data op
         const doc = await db.collection('users').doc(user.uid).get();
         if (doc.exists) {
           trackerData = doc.data();
           if (!trackerData.customDb || trackerData.customDb.length < 5) trackerData.customDb = defaultPresets;
           if (!trackerData.energyLogs) trackerData.energyLogs = {};
         } else {
-          // Eerste keer ingelogd: Kijk of er lokaal data is en verhuis naar de cloud!
           let local = localStorage.getItem('metTrackerData');
           if (local) {
             trackerData = JSON.parse(local);
             await db.collection('users').doc(user.uid).set(trackerData);
           } else {
-            // Helemaal blanco
             trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
           }
         }
@@ -569,7 +567,6 @@
       
       render();
     } else {
-      // Uitgelogd
       currentUser = null;
       document.getElementById('loadingScreen').style.display = 'none';
       document.getElementById('authScreen').style.display = 'block';
@@ -579,10 +576,7 @@
 
   // 4. DATA OPSLAAN (CLOUD)
   function saveData() {
-    // Sla lokaal op als backup cache
     localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
-    
-    // Sla direct op in Cloud als ingelogd
     if (currentUser) {
       db.collection('users').doc(currentUser.uid).set(trackerData)
         .catch(err => console.error("Cloud opslag fout:", err));
