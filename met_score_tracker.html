@@ -6,7 +6,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MET & Energie Tracker</title>
+  
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Firebase Scripts (Compat v8 voor simpele integratie) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <style>
     :root {
       --bg-color: #f4f4f9;
@@ -269,142 +277,169 @@
     .star-btn.active {
       color: #f1c40f;
     }
-
     #fileInput { display: none; }
+
+    .google-btn {
+      background-color: #ffffff;
+      color: #757575;
+      border: 1px solid #ddd;
+      padding: 10px 16px;
+      font-size: 15px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .google-btn img {
+      width: 18px;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>MET & Energie Tracker</h2>
-
-  <!-- Datum Selectie (Met indicator stip) -->
-  <div class="card">
-    <div class="date-nav">
-      <button onclick="shiftDate(-1)">◀</button>
-      <div class="date-picker-wrapper">
-        <span id="centerDateDisplay"></span>
-        <input type="date" id="selectedDate" onchange="changeDate()">
-      </div>
-      <button onclick="shiftDate(1)">▶</button>
-    </div>
+  
+  <!-- Laadscherm -->
+  <div id="loadingScreen" class="card" style="text-align: center; padding: 40px 20px;">
+    <h3>Verbinding maken met de Cloud... ⏳</h3>
   </div>
 
-  <!-- Energieniveau Scores -->
-  <div class="card">
-    <h3 style="margin-bottom: 12px;">Energieniveau</h3>
-
-    <!-- Ochtend -->
-    <div class="energy-card" id="cardOchtend">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-        <label for="eOchtend" style="margin-bottom: 0;">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
-        <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
-      </div>
-      <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
-      <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
-    </div>
-
-    <!-- Avond -->
-    <div class="energy-card" id="cardAvond">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-        <label for="eAvond" style="margin-bottom: 0;">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
-        <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
-      </div>
-      <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
-      <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
-    </div>
+  <!-- Inlogscherm (Zichtbaar als uitgelogd) -->
+  <div id="authScreen" class="card" style="display: none; text-align: center; padding: 40px 20px;">
+    <h2 style="color: var(--primary);">MET & Energie Tracker</h2>
+    <p style="margin-bottom: 24px; font-size: 14px; color: #555;">
+      Welkom! Log veilig in met Google om je gegevens permanent en veilig in de cloud op te slaan.
+    </p>
+    <button onclick="loginWithGoogle()" class="google-btn">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google G">
+      Inloggen met Google
+    </button>
   </div>
 
-  <!-- MET Invoer & Database Snelkeuze -->
-  <div class="card" id="inputCard">
-    <h3>Activiteit Toevoegen</h3>
+  <!-- Hoofd App (Zichtbaar als ingelogd) -->
+  <div id="appContainer" style="display: none;">
     
-    <label for="presetSelect">Kies uit MET-Database:</label>
-    <select id="presetSelect" onchange="selectPreset()">
-      <!-- Wordt dynamisch gevuld -->
-    </select>
-
-    <div style="text-align: right; margin-bottom: 12px;">
-      <button onclick="openDbModal()" class="btn-secondary btn-small">⚙️ Beheer MET-Lijst & Favorieten</button>
-    </div>
-    
-    <!-- Regel 1: Naam en MET-score -->
-    <div class="input-row-2">
-      <div class="compact-field">
-        <label for="actName">Activiteit Naam</label>
-        <input type="text" id="actName" class="text-left" placeholder="bijv. Wandelen">
-      </div>
-      <div class="compact-field">
-        <label for="metVal">MET-score</label>
-        <input type="number" id="metVal" class="text-center" step="0.1" placeholder="2.5">
-      </div>
-    </div>
-
-    <!-- Regel 2: Tijd, Uren, Minuten -->
-    <div class="input-row-3">
-      <div class="compact-field">
-        <label for="startTime">Starttijd</label>
-        <input type="time" id="startTime" class="text-center">
-      </div>
-      <div class="compact-field">
-        <label for="durHours">Uren</label>
-        <input type="number" id="durHours" class="text-center" min="0" max="24" placeholder="0u">
-      </div>
-      <div class="compact-field">
-        <label for="durMins">Minuten</label>
-        <input type="number" id="durMins" class="text-center" min="0" max="59" placeholder="30m">
-      </div>
-    </div>
-
-    <div style="text-align: right; margin-top: 8px;">
-      <button id="saveActBtn" onclick="addOrUpdateActivity()" class="btn-small">Activiteit Opslaan</button>
-    </div>
-  </div>
-
-  <!-- Dagoverzicht & Logboek -->
-  <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h3 style="margin: 0;">Logboek <br><span class="logDateSubtitle" style="font-size: 13px; font-weight: normal; color: var(--primary);"></span></h3>
-      <button onclick="openCopyModal()" class="btn-secondary btn-small" style="font-size: 12px; padding: 4px 8px;">📄 Kopieer Dag</button>
+      <h2 style="margin: 0; font-size: 18px;">MET Tracker</h2>
+      <button onclick="logout()" class="btn-secondary btn-small" style="font-size: 11px; padding: 4px 8px;">Uitloggen</button>
     </div>
-    <div id="logList">Nog geen activiteiten ingevoerd.</div>
-    <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
-    <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
-  </div>
 
-  <!-- Grafiek Afgelopen 7 Dagen -->
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <h3 style="margin: 0;">📈 Grafiek</h3>
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <button onclick="shiftChart(-1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">◀</button>
-        <span id="chartEndDisplay" style="font-size: 13px; font-weight: bold; min-width: 45px; text-align: center;"></span>
-        <button onclick="shiftChart(1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">▶</button>
+    <!-- Datum Selectie -->
+    <div class="card">
+      <div class="date-nav">
+        <button onclick="shiftDate(-1)">◀</button>
+        <div class="date-picker-wrapper">
+          <span id="centerDateDisplay"></span>
+          <input type="date" id="selectedDate" onchange="changeDate()">
+        </div>
+        <button onclick="shiftDate(1)">▶</button>
       </div>
     </div>
-    <div class="chart-container">
-      <canvas id="historyChart"></canvas>
+
+    <!-- Energieniveau Scores -->
+    <div class="card">
+      <h3 style="margin-bottom: 12px;">Energieniveau</h3>
+      <div class="energy-card" id="cardOchtend">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label for="eOchtend" style="margin-bottom: 0;">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
+          <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
+        </div>
+        <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
+        <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
+      </div>
+      <div class="energy-card" id="cardAvond">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label for="eAvond" style="margin-bottom: 0;">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
+          <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
+        </div>
+        <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
+        <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
+      </div>
+    </div>
+
+    <!-- MET Invoer & Database Snelkeuze -->
+    <div class="card" id="inputCard">
+      <h3>Activiteit Toevoegen</h3>
+      <label for="presetSelect">Kies uit MET-Database:</label>
+      <select id="presetSelect" onchange="selectPreset()"></select>
+      <div style="text-align: right; margin-bottom: 12px;">
+        <button onclick="openDbModal()" class="btn-secondary btn-small">⚙️ Beheer MET-Lijst & Favorieten</button>
+      </div>
+      <div class="input-row-2">
+        <div class="compact-field">
+          <label for="actName">Activiteit Naam</label>
+          <input type="text" id="actName" class="text-left" placeholder="bijv. Wandelen">
+        </div>
+        <div class="compact-field">
+          <label for="metVal">MET-score</label>
+          <input type="number" id="metVal" class="text-center" step="0.1" placeholder="2.5">
+        </div>
+      </div>
+      <div class="input-row-3">
+        <div class="compact-field">
+          <label for="startTime">Starttijd</label>
+          <input type="time" id="startTime" class="text-center">
+        </div>
+        <div class="compact-field">
+          <label for="durHours">Uren</label>
+          <input type="number" id="durHours" class="text-center" min="0" max="24" placeholder="0u">
+        </div>
+        <div class="compact-field">
+          <label for="durMins">Minuten</label>
+          <input type="number" id="durMins" class="text-center" min="0" max="59" placeholder="30m">
+        </div>
+      </div>
+      <div style="text-align: right; margin-top: 8px;">
+        <button id="saveActBtn" onclick="addOrUpdateActivity()" class="btn-small">Activiteit Opslaan</button>
+      </div>
+    </div>
+
+    <!-- Dagoverzicht & Logboek -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;">Logboek <br><span class="logDateSubtitle" style="font-size: 13px; font-weight: normal; color: var(--primary);"></span></h3>
+        <button onclick="openCopyModal()" class="btn-secondary btn-small" style="font-size: 12px; padding: 4px 8px;">📄 Kopieer Dag</button>
+      </div>
+      <div id="logList">Nog geen activiteiten ingevoerd.</div>
+      <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
+      <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
+    </div>
+
+    <!-- Grafiek Afgelopen 7 Dagen -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="margin: 0;">📈 Grafiek</h3>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button onclick="shiftChart(-1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">◀</button>
+          <span id="chartEndDisplay" style="font-size: 13px; font-weight: bold; min-width: 45px; text-align: center;"></span>
+          <button onclick="shiftChart(1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">▶</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="historyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Data Beheer Opties -->
+    <div class="card">
+      <h3>Data Beheer</h3>
+      <div class="flex-gap" style="margin-bottom: 8px;">
+        <button onclick="exportData()" class="btn-secondary btn-small" style="flex:1;">Exporteer (Handmatig)</button>
+      </div>
+      <button onclick="clearAllData()" class="btn-danger btn-small" style="width:100%;">Wis Alle Data</button>
     </div>
   </div>
 
-  <!-- Back-up & Data Beheer -->
-  <div class="card">
-    <h3>Data Beheer</h3>
-    <div class="flex-gap" style="margin-bottom: 8px;">
-      <button onclick="exportData()" class="btn-secondary btn-small" style="flex:1;">Exporteer Data</button>
-      <button onclick="document.getElementById('fileInput').click()" class="btn-secondary btn-small" style="flex:1;">Importeer Data</button>
-    </div>
-    <button onclick="clearAllData()" class="btn-danger btn-small" style="width:100%;">Wis Alle Data</button>
-    <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
-  </div>
 </div>
 
-<!-- Modal voor MET Database Beheer -->
+<!-- Modals -->
 <div class="modal" id="dbModal">
   <div class="modal-content">
     <h3>⚙️ Beheer MET-Lijst & Favorieten</h3>
-    <p style="font-size:12px; color:#666;">Klik op het sterretje ⭐ om een activiteit als favoriet in te stellen. Klik op ✏️ om de naam of MET-score te bewerken.</p>
-    
+    <p style="font-size:12px; color:#666;">Klik op ⭐ voor favorieten. Klik op ✏️ om de naam of score te bewerken.</p>
     <div style="background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:12px;">
       <label style="font-size:12px;" id="dbFormLabel">Nieuwe activiteit toevoegen:</label>
       <div class="flex-gap">
@@ -413,23 +448,18 @@
         <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small">+</button>
       </div>
     </div>
-
     <div id="dbListContainer"></div>
-
     <div style="text-align: right; margin-top: 12px;">
       <button onclick="closeDbModal()" class="btn-small">Sluiten</button>
     </div>
   </div>
 </div>
 
-<!-- Modal voor Kopiëren van Dagen -->
 <div class="modal" id="copyModal">
   <div class="modal-content">
     <h3>📄 Kopieer Activiteiten</h3>
-    <p style="font-size:12px; color:#666;">Kies een eerdere dag met activiteiten (aangegeven met een ●) om deze in hun geheel naar vandaag te kopiëren.</p>
-    
+    <p style="font-size:12px; color:#666;">Kies een eerdere dag (aangegeven met een ●) om deze naar vandaag te kopiëren.</p>
     <div id="copyListContainer" style="margin-top: 12px; max-height: 50vh; overflow-y: auto;"></div>
-
     <div style="text-align: right; margin-top: 12px;">
       <button onclick="closeCopyModal()" class="btn-secondary btn-small">Annuleren</button>
     </div>
@@ -437,61 +467,41 @@
 </div>
 
 <script>
+  // 1. FIREBASE INITIALISATIE
+  const firebaseConfig = {
+    apiKey: "AIzaSyANPviv1SCJMGBRcHKKy8bFVSB64VzCmqk",
+    authDomain: "met-scores.firebaseapp.com",
+    projectId: "met-scores",
+    storageBucket: "met-scores.firebasestorage.app",
+    messagingSenderId: "21235550980",
+    appId: "1:21235550980:web:37a9604907b17f81ec5e51",
+    measurementId: "G-0MTMTG6T4M"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  
+  let currentUser = null;
+
+  // 2. DATA STRUCTUUR & STANDAARDEN
   const defaultPresets = [
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
-    { name: "Zichzelf wassen / Scheren / Aankleden", met: 1.5, fav: true },
-    { name: "Afwassen / Schrijven", met: 1.5, fav: false },
-    { name: "TV kijken / Kaarten", met: 1.5, fav: false },
-    { name: "Rechtop staan (15 min) / Naaiwerk", met: 1.5, fav: false },
-    { name: "Licht bureauwerk / Typen", met: 1.5, fav: false },
     { name: "Wagen besturen", met: 2.0, fav: true },
-    { name: "Koken", met: 2.0, fav: true },
-    { name: "Borstelen / Dweilen / Afstoffen", met: 2.0, fav: false },
-    { name: "Muziek spelen (piano/gitaar) / Tekenen", met: 2.0, fav: false },
-    { name: "Wandelen (2,5 km/u)", met: 2.0, fav: false },
-    { name: "Bedden opmaken / Stofzuigen / Strijken", met: 3.0, fav: true },
-    { name: "Meubilair boenen / Tuinieren", met: 3.0, fav: false },
-    { name: "Boodschappen doen", met: 3.5, fav: true },
     { name: "Wandelen (3-4 km/u)", met: 3.0, fav: true },
-    { name: "Fietsen (8 km/u)", met: 3.0, fav: false },
-    { name: "Lichte gymnastiek / Bowling / Golfen", met: 3.0, fav: false },
-    { name: "Douchen", met: 4.0, fav: true },
-    { name: "Ruiten wassen / Vloer schrobben", met: 4.0, fav: false },
-    { name: "Trappen afdalen", met: 4.0, fav: false },
-    { name: "Grasmaaien (elektrisch) / Wieden", met: 4.0, fav: false },
-    { name: "Wandelen (5 km/u)", met: 4.0, fav: true },
-    { name: "Fietsen (10 km/u)", met: 4.0, fav: true },
-    { name: "Zwemmen (schoolslag) / Badminton", met: 4.0, fav: false },
-    { name: "Boodschappen met zware tas", met: 5.0, fav: false },
-    { name: "Spitten in de tuin / Grasmaaien handmatig", met: 5.0, fav: false },
-    { name: "Fietsen (12 km/u)", met: 5.0, fav: false },
-    { name: "Wandelen (5,5 km/u)", met: 5.0, fav: false },
-    { name: "Trappen oplopen", met: 6.0, fav: false },
-    { name: "Tennis (enkel) / Basketbal / Voetbal", met: 6.0, fav: false },
-    { name: "Sneeuw ruimen / Hout klieven", met: 7.0, fav: false },
-    { name: "Fietsen (15 km/u) / Wandelen (7,5 km/u)", met: 7.0, fav: false },
-    { name: "Fietsen (19 km/u) / Joggen (8 km/u)", met: 8.0, fav: false },
-    { name: "Zwemmen (crawl zeer snel)", met: 9.0, fav: false },
-    { name: "Fietsen (23 km/u) / Squash / Roeien", met: 10.0, fav: false },
-    { name: "Lopen (10 km/u)", met: 11.0, fav: false },
-    { name: "Lopen (12 km/u) / Fietsen (25 km/u)", met: 12.0, fav: false }
+    { name: "Fietsen (10 km/u)", met: 4.0, fav: true }
+    // De app vult ontbrekende presets zelf aan indien nodig
   ];
 
-  let trackerData = JSON.parse(localStorage.getItem('metTrackerData')) || {
+  let trackerData = {
     energyLogs: {},
     activities: [],
     customDb: defaultPresets
   };
 
-  if (!trackerData.customDb || trackerData.customDb.length < 20) {
-    trackerData.customDb = defaultPresets;
-  }
-  if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
-
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
-  
   let chartEndDate = new Date().toISOString().split('T')[0];
 
   const now = new Date();
@@ -503,26 +513,125 @@
 
   const energyMetaMap = {
     10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
-    9:  { text: "🟢 9 - Zeer goed energieniveau", color: "#27ae60" },
-    8:  { text: "🟡 8 - Goed / Lichte vermoeidheid", color: "#f1c40f" },
-    7:  { text: "🟡 7 - Redelijk / Energie neemt af", color: "#f39c12" },
-    6:  { text: "🟠 6 - Matige energie / Rust nodig", color: "#e67e22" },
+    9:  { text: "🟢 9 - Zeer goed", color: "#27ae60" },
+    8:  { text: "🟡 8 - Goed", color: "#f1c40f" },
+    7:  { text: "🟡 7 - Redelijk", color: "#f39c12" },
+    6:  { text: "🟠 6 - Matige energie", color: "#e67e22" },
     5:  { text: "🟠 5 - Laag energieniveau", color: "#d35400" },
-    4:  { text: "🔴 4 - Erg moe / Minimale energie", color: "#e74c3c" },
-    3:  { text: "🔴 3 - Uitgeput / Heel weinig puf", color: "#c0392b" },
-    2:  { text: "🟣 2 - Extreem leeg / Platliggen", color: "#8e44ad" },
-    1:  { text: "🟣 1 - Maximale uitputting / Crash", color: "#6c3483" }
+    4:  { text: "🔴 4 - Erg moe", color: "#e74c3c" },
+    3:  { text: "🔴 3 - Uitgeput", color: "#c0392b" },
+    2:  { text: "🟣 2 - Extreem leeg", color: "#8e44ad" },
+    1:  { text: "🟣 1 - Crash", color: "#6c3483" }
   };
+
+  // 3. AUTHENTICATIE LOGICA
+  function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithRedirect(provider);
+  }
+
+  function logout() {
+    auth.signOut();
+  }
+
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'block';
+      
+      try {
+        // Haal cloud data op
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          trackerData = doc.data();
+          if (!trackerData.customDb || trackerData.customDb.length < 5) trackerData.customDb = defaultPresets;
+          if (!trackerData.energyLogs) trackerData.energyLogs = {};
+        } else {
+          // Eerste keer ingelogd: Kijk of er lokaal data is en verhuis naar de cloud!
+          let local = localStorage.getItem('metTrackerData');
+          if (local) {
+            trackerData = JSON.parse(local);
+            await db.collection('users').doc(user.uid).set(trackerData);
+          } else {
+            // Helemaal blanco
+            trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
+          }
+        }
+      } catch (e) {
+        console.error("Fout bij ophalen cloud data", e);
+      }
+      
+      render();
+    } else {
+      // Uitgelogd
+      currentUser = null;
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'block';
+      document.getElementById('appContainer').style.display = 'none';
+    }
+  });
+
+  // 4. DATA OPSLAAN (CLOUD)
+  function saveData() {
+    // Sla lokaal op als backup cache
+    localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
+    
+    // Sla direct op in Cloud als ingelogd
+    if (currentUser) {
+      db.collection('users').doc(currentUser.uid).set(trackerData)
+        .catch(err => console.error("Cloud opslag fout:", err));
+    }
+    render();
+  }
+
+  // 5. DE REST VAN DE APP LOGICA
+  function updateMeta(type, val) {
+    document.getElementById('val' + type).innerText = val;
+    const meta = energyMetaMap[val] || energyMetaMap[10];
+    const metaDiv = document.getElementById('meta' + type);
+    const card = document.getElementById('card' + type);
+    
+    metaDiv.innerText = meta.text;
+    metaDiv.style.color = meta.color;
+    card.style.borderLeftColor = meta.color;
+    document.documentElement.style.setProperty(`--thumb-${type.toLowerCase()}`, meta.color);
+
+    const btn = document.getElementById('btnSave' + type);
+    if (btn && btn.innerText !== "Opslaan") {
+      btn.innerText = "Opslaan";
+      btn.style.backgroundColor = "var(--primary)";
+    }
+  }
+
+  function saveEnergy(type) {
+    if (!trackerData.energyLogs[currentDate]) trackerData.energyLogs[currentDate] = {};
+    
+    let btn;
+    if (type === 'ochtend') {
+      trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
+      btn = document.getElementById('btnSaveOchtend');
+    } else if (type === 'avond') {
+      trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
+      btn = document.getElementById('btnSaveAvond');
+    }
+    
+    saveData();
+    
+    if (btn) {
+      btn.innerText = "✓";
+      btn.style.backgroundColor = "#2ecc71";
+    }
+  }
 
   function renderPresetDropdown() {
     const select = document.getElementById('presetSelect');
     select.innerHTML = '<option value="">-- Kies uit MET-Database --</option>';
-
     const sorted = [...trackerData.customDb].sort((a, b) => {
       if (b.fav !== a.fav) return b.fav - a.fav;
       return a.name.localeCompare(b.name);
     });
-
     sorted.forEach(item => {
       const opt = document.createElement('option');
       opt.value = `${item.name}|${item.met}`;
@@ -560,53 +669,6 @@
     renderChart();
   }
 
-  function updateMeta(type, val) {
-    document.getElementById('val' + type).innerText = val;
-    const meta = energyMetaMap[val] || energyMetaMap[10];
-    const metaDiv = document.getElementById('meta' + type);
-    const card = document.getElementById('card' + type);
-    
-    metaDiv.innerText = meta.text;
-    metaDiv.style.color = meta.color;
-    card.style.borderLeftColor = meta.color;
-
-    document.documentElement.style.setProperty(`--thumb-${type.toLowerCase()}`, meta.color);
-
-    const btn = document.getElementById('btnSave' + type);
-    if (btn && btn.innerText !== "Opslaan") {
-      btn.innerText = "Opslaan";
-      btn.style.backgroundColor = "var(--primary)";
-    }
-  }
-
-  function saveData() {
-    localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
-    render();
-  }
-
-  function saveEnergy(type) {
-    if (!trackerData.energyLogs[currentDate]) {
-      trackerData.energyLogs[currentDate] = {};
-    }
-    
-    let btn;
-    if (type === 'ochtend') {
-      trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
-      btn = document.getElementById('btnSaveOchtend');
-    } else if (type === 'avond') {
-      trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
-      btn = document.getElementById('btnSaveAvond');
-    }
-    
-    localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
-    renderChart(); 
-    
-    if (btn) {
-      btn.innerText = "✓";
-      btn.style.backgroundColor = "#2ecc71";
-    }
-  }
-
   function addOrUpdateActivity() {
     const name = document.getElementById('actName').value;
     const startTime = document.getElementById('startTime').value || "00:00";
@@ -637,12 +699,10 @@
           points: parseFloat(points)
         };
       }
-      
       currentEditId = null;
       const btn = document.getElementById('saveActBtn');
       btn.innerText = "Activiteit Opslaan";
       btn.style.backgroundColor = "var(--primary)";
-
     } else {
       trackerData.activities.push({
         id: Date.now(),
@@ -669,7 +729,6 @@
   function editAct(id) {
     const act = trackerData.activities.find(a => a.id === id);
     if (!act) return;
-
     document.getElementById('actName').value = act.name;
     document.getElementById('metVal').value = act.met;
     document.getElementById('startTime').value = act.time;
@@ -680,7 +739,6 @@
     const btn = document.getElementById('saveActBtn');
     btn.innerText = "Activiteit Bijwerken";
     btn.style.backgroundColor = "var(--edit-color)";
-    
     document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -695,16 +753,12 @@
     const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
     const fullDateString = dObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     
-    // Check of deze dag activiteiten heeft voor de blauwe stip (●)
     const hasData = trackerData.activities.some(a => a.date === currentDate);
     const dotHtml = hasData ? `<span style="color: #4a90e2; margin-right:4px;">●</span>` : '';
-    
     document.getElementById('centerDateDisplay').innerHTML = dotHtml + dateString;
     
     const logDateText = fullDateString.charAt(0).toUpperCase() + fullDateString.slice(1);
-    document.querySelectorAll('.logDateSubtitle').forEach(el => {
-      el.innerText = logDateText;
-    });
+    document.querySelectorAll('.logDateSubtitle').forEach(el => el.innerText = logDateText);
 
     renderPresetDropdown();
 
@@ -739,14 +793,11 @@
       let total = 0;
       dayActs.forEach(a => {
         total += a.points;
-        
         let durStr = "";
         if (a.hours && a.hours > 0) durStr += `${a.hours}u `;
         if (a.minutes && a.minutes > 0) durStr += `${a.minutes}m`;
         if (!durStr) durStr = `${a.duration}m`;
-
         const timeDisplay = a.time ? `<span style="color:#e67e22; font-weight:bold;">${a.time}</span> - ` : '';
-
         html += `
           <div class="entry">
             <div>
@@ -755,8 +806,8 @@
             </div>
             <div style="display: flex; align-items: center;">
               <span class="badge" style="margin-right: 4px;">${a.points} ptn</span>
-              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:2px 6px; margin-left:4px;" title="Bewerk Activiteit">✏️</button>
-              <button onclick="deleteAct(${a.id})" class="btn-danger btn-small" style="padding:2px 6px; margin-left:4px;" title="Verwijder Activiteit">X</button>
+              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:2px 6px; margin-left:4px;" title="Bewerk">✏️</button>
+              <button onclick="deleteAct(${a.id})" class="btn-danger btn-small" style="padding:2px 6px; margin-left:4px;" title="Verwijder">X</button>
             </div>
           </div>
         `;
@@ -764,7 +815,6 @@
       list.innerHTML = html;
       document.getElementById('totalMET').innerText = total.toFixed(1);
     }
-
     renderChart();
   }
 
@@ -774,7 +824,6 @@
     let ochtendData = [];
     let avondData = [];
     let metData = [];
-
     let baseDate = new Date(chartEndDate);
 
     const endParts = chartEndDate.split('-');
@@ -794,219 +843,101 @@
       avondData.push(eLog.avond ? parseFloat(eLog.avond) : null);
 
       let totalMET = 0;
-      trackerData.activities.filter(a => a.date === dStr).forEach(a => {
-        totalMET += a.points;
-      });
+      trackerData.activities.filter(a => a.date === dStr).forEach(a => totalMET += a.points);
       metData.push(totalMET > 0 ? parseFloat(totalMET.toFixed(1)) : 0);
     }
 
     const ctx = document.getElementById('historyChart').getContext('2d');
-
-    if (historyChart) {
-      historyChart.destroy();
-    }
+    if (historyChart) historyChart.destroy();
 
     historyChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          {
-            type: 'line',
-            label: '🌅 Och. Energie',
-            data: ochtendData,
-            borderColor: '#2ecc71',
-            backgroundColor: '#2ecc71',
-            borderWidth: 2,
-            tension: 0.2,
-            yAxisID: 'yEnergy',
-            spanGaps: true
-          },
-          {
-            type: 'line',
-            label: '🌙 Av. Energie',
-            data: avondData,
-            borderColor: '#3498db',
-            backgroundColor: '#3498db',
-            borderWidth: 2,
-            tension: 0.2,
-            yAxisID: 'yEnergy',
-            spanGaps: true
-          },
-          {
-            type: 'bar',
-            label: '⚡ MET-Punten',
-            data: metData,
-            backgroundColor: 'rgba(230, 126, 34, 0.4)',
-            borderColor: '#e67e22',
-            borderWidth: 1,
-            yAxisID: 'yMET'
-          }
+          { type: 'line', label: '🌅 Och.', data: ochtendData, borderColor: '#2ecc71', backgroundColor: '#2ecc71', borderWidth: 2, tension: 0.2, yAxisID: 'yEnergy', spanGaps: true },
+          { type: 'line', label: '🌙 Av.', data: avondData, borderColor: '#3498db', backgroundColor: '#3498db', borderWidth: 2, tension: 0.2, yAxisID: 'yEnergy', spanGaps: true },
+          { type: 'bar', label: '⚡ Ptn.', data: metData, backgroundColor: 'rgba(230, 126, 34, 0.4)', borderColor: '#e67e22', borderWidth: 1, yAxisID: 'yMET' }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         scales: {
-          yEnergy: {
-            type: 'linear',
-            position: 'left',
-            min: 1,
-            max: 10,
-            title: {
-              display: true,
-              text: 'Energie (1-10)',
-              font: { size: 10 }
-            },
-            ticks: { stepSize: 2 }
-          },
-          yMET: {
-            type: 'linear',
-            position: 'right',
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'MET-punten',
-              font: { size: 10 }
-            },
-            grid: {
-              drawOnChartArea: false
-            }
-          }
+          yEnergy: { type: 'linear', position: 'left', min: 1, max: 10, title: { display: true, text: 'Energie (1-10)', font: { size: 10 } }, ticks: { stepSize: 2 } },
+          yMET: { type: 'linear', position: 'right', beginAtZero: true, title: { display: true, text: 'MET-punten', font: { size: 10 } }, grid: { drawOnChartArea: false } }
         },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              font: { size: 11 }
-            }
-          }
-        }
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
       }
     });
   }
 
-  /* --- MET Database Beheer --- */
-  function openDbModal() {
-    renderDbModalList();
-    document.getElementById('dbModal').style.display = 'flex';
-  }
-
+  function openDbModal() { renderDbModalList(); document.getElementById('dbModal').style.display = 'flex'; }
   function closeDbModal() {
     document.getElementById('dbModal').style.display = 'none';
-    
     currentDbEditIndex = null;
-    document.getElementById('newDbName').value = '';
-    document.getElementById('newDbMet').value = '';
+    document.getElementById('newDbName').value = ''; document.getElementById('newDbMet').value = '';
     document.getElementById('dbFormLabel').innerText = "Nieuwe activiteit toevoegen:";
-    const btn = document.getElementById('saveDbBtn');
-    btn.innerText = "+";
-    btn.style.backgroundColor = "var(--primary)";
-    
+    const btn = document.getElementById('saveDbBtn'); btn.innerText = "+"; btn.style.backgroundColor = "var(--primary)";
     render();
   }
-
   function renderDbModalList() {
-    const container = document.getElementById('dbListContainer');
-    container.innerHTML = '';
-
+    const container = document.getElementById('dbListContainer'); container.innerHTML = '';
     trackerData.customDb.forEach((item, index) => {
-      const div = document.createElement('div');
-      div.className = 'db-item';
+      const div = document.createElement('div'); div.className = 'db-item';
       div.innerHTML = `
         <div>
           <button class="star-btn ${item.fav ? 'active' : ''}" onclick="toggleFav(${index})">★</button>
           <strong>${item.name}</strong> <small style="color:#666;">(MET ${item.met})</small>
         </div>
         <div style="display: flex; gap: 4px;">
-          <button onclick="editDbItem(${index})" class="btn-secondary btn-small" style="padding:2px 6px;" title="Bewerk">✏️</button>
-          <button onclick="removeDbItem(${index})" class="btn-danger btn-small" style="padding:2px 6px;" title="Verwijder">X</button>
+          <button onclick="editDbItem(${index})" class="btn-secondary btn-small" style="padding:2px 6px;">✏️</button>
+          <button onclick="removeDbItem(${index})" class="btn-danger btn-small" style="padding:2px 6px;">X</button>
         </div>
       `;
       container.appendChild(div);
     });
   }
-
-  function toggleFav(index) {
-    trackerData.customDb[index].fav = !trackerData.customDb[index].fav;
-    saveData();
-    renderDbModalList();
-  }
-
+  function toggleFav(index) { trackerData.customDb[index].fav = !trackerData.customDb[index].fav; saveData(); renderDbModalList(); }
   function editDbItem(index) {
     const item = trackerData.customDb[index];
-    document.getElementById('newDbName').value = item.name;
-    document.getElementById('newDbMet').value = item.met;
-    
+    document.getElementById('newDbName').value = item.name; document.getElementById('newDbMet').value = item.met;
     currentDbEditIndex = index;
     document.getElementById('dbFormLabel').innerText = "Activiteit bewerken:";
-    
-    const btn = document.getElementById('saveDbBtn');
-    btn.innerText = "✓";
-    btn.style.backgroundColor = "var(--edit-color)";
+    const btn = document.getElementById('saveDbBtn'); btn.innerText = "✓"; btn.style.backgroundColor = "var(--edit-color)";
   }
-
   function removeDbItem(index) {
     if (confirm(`Verwijder "${trackerData.customDb[index].name}" uit de lijst?`)) {
-      trackerData.customDb.splice(index, 1);
-      saveData();
-      renderDbModalList();
+      trackerData.customDb.splice(index, 1); saveData(); renderDbModalList();
     }
   }
-
   function addOrUpdateDbItem() {
-    const name = document.getElementById('newDbName').value.trim();
-    const met = parseFloat(document.getElementById('newDbMet').value);
-
-    if (!name || isNaN(met)) {
-      alert('Vul een naam en een geldige MET-score in.');
-      return;
-    }
-
+    const name = document.getElementById('newDbName').value.trim(); const met = parseFloat(document.getElementById('newDbMet').value);
+    if (!name || isNaN(met)) { alert('Vul een naam en een geldige MET-score in.'); return; }
     if (currentDbEditIndex !== null) {
-      trackerData.customDb[currentDbEditIndex].name = name;
-      trackerData.customDb[currentDbEditIndex].met = met;
-      
+      trackerData.customDb[currentDbEditIndex].name = name; trackerData.customDb[currentDbEditIndex].met = met;
       currentDbEditIndex = null;
       document.getElementById('dbFormLabel').innerText = "Nieuwe activiteit toevoegen:";
-      const btn = document.getElementById('saveDbBtn');
-      btn.innerText = "+";
-      btn.style.backgroundColor = "var(--primary)";
+      const btn = document.getElementById('saveDbBtn'); btn.innerText = "+"; btn.style.backgroundColor = "var(--primary)";
     } else {
       trackerData.customDb.push({ name: name, met: met, fav: true });
     }
-
-    document.getElementById('newDbName').value = '';
-    document.getElementById('newDbMet').value = '';
-
-    saveData();
-    renderDbModalList();
+    document.getElementById('newDbName').value = ''; document.getElementById('newDbMet').value = '';
+    saveData(); renderDbModalList();
   }
 
-  /* --- Kopiëren van Dagen --- */
   function openCopyModal() {
-    const container = document.getElementById('copyListContainer');
-    container.innerHTML = '';
-
-    // Haal alle unieke datums op waar activiteiten voor geregistreerd staan
+    const container = document.getElementById('copyListContainer'); container.innerHTML = '';
     const datesWithActivities = [...new Set(trackerData.activities.map(a => a.date))];
     const availableDates = datesWithActivities.filter(d => d !== currentDate).sort((a, b) => b.localeCompare(a));
-
     if (availableDates.length === 0) {
-      container.innerHTML = '<p style="font-size:13px; color:#666;">Je hebt nog geen eerdere dagen met activiteiten geregistreerd.</p>';
+      container.innerHTML = '<p style="font-size:13px; color:#666;">Je hebt nog geen eerdere dagen met activiteiten.</p>';
     } else {
       availableDates.forEach(dStr => {
         const acts = trackerData.activities.filter(a => a.date === dStr);
         const points = acts.reduce((sum, a) => sum + a.points, 0).toFixed(1);
-        
-        const [yyyy, mm, dd] = dStr.split('-');
-        const dObj = new Date(yyyy, mm - 1, dd);
+        const [yyyy, mm, dd] = dStr.split('-'); const dObj = new Date(yyyy, mm - 1, dd);
         const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-
-        const div = document.createElement('div');
-        div.className = 'db-item';
-        div.style.cursor = 'pointer';
+        const div = document.createElement('div'); div.className = 'db-item'; div.style.cursor = 'pointer';
         div.onclick = () => copyActivities(dStr);
         div.innerHTML = `
           <div>
@@ -1021,73 +952,29 @@
     }
     document.getElementById('copyModal').style.display = 'flex';
   }
-
-  function closeCopyModal() {
-    document.getElementById('copyModal').style.display = 'none';
-  }
-
+  function closeCopyModal() { document.getElementById('copyModal').style.display = 'none'; }
   function copyActivities(sourceDate) {
     const actsToCopy = trackerData.activities.filter(a => a.date === sourceDate);
-    
-    // Voeg gekopieerde activiteiten toe met een nieuwe ID en de huidige geselecteerde datum
-    actsToCopy.forEach((act, index) => {
-      trackerData.activities.push({
-        ...act,
-        id: Date.now() + index, // Nieuwe unieke ID
-        date: currentDate
-      });
-    });
-    
-    saveData();
-    closeCopyModal();
-    alert(`Activiteiten succesvol gekopieerd naar vandaag!`);
+    actsToCopy.forEach((act, index) => trackerData.activities.push({ ...act, id: Date.now() + index, date: currentDate }));
+    saveData(); closeCopyModal(); alert(`Activiteiten succesvol gekopieerd naar vandaag!`);
   }
 
-  /* --- Data Beheer --- */
   function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
+    const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", `met_tracker_backup_${currentDate}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
   }
-
-  function importData(event) {
-    const fileReader = new FileReader();
-    fileReader.onload = function(e) {
-      try {
-        const imported = JSON.parse(e.target.result);
-        if (imported.activities) {
-          trackerData = imported;
-          if (!trackerData.customDb) trackerData.customDb = defaultPresets;
-          if (!trackerData.energyLogs) trackerData.energyLogs = trackerData.fatigueLogs || {};
-          saveData();
-          alert('Data succesvol geïmporteerd!');
-        } else {
-          alert('Ongeldig back-up bestand.');
-        }
-      } catch (err) {
-        alert('Fout bij het lezen van het bestand.');
-      }
-    };
-    if (event.target.files[0]) {
-      fileReader.readAsText(event.target.files[0]);
-    }
-  }
-
+  
   function clearAllData() {
-    if (confirm("Weet je zeker dat je alle opgeslagen gegevens wilt wissen?")) {
-      localStorage.removeItem('metTrackerData');
+    if (confirm("Weet je zeker dat je alle cloud- en lokale gegevens wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
       trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
-      render();
-      alert("Alle gegevens zijn gewist.");
+      saveData();
+      alert("Alle gegevens zijn permanent gewist.");
     }
   }
-
-  render();
 </script>
 
 </body>
 </html>
+k
