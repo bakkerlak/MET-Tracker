@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MET Tracker</title>
   
-  <!-- Koppel het app-icoon voor het iOS beginscherm -->
   <link rel="apple-touch-icon" href="icon.JPG">
   
   <!-- Chart.js -->
@@ -20,7 +19,6 @@
 
   <style>
     :root {
-      /* Moderne iOS Light Theme kleuren */
       --bg-color: #f2f2f7;
       --card-bg: #ffffff;
       --primary: #007aff;
@@ -49,7 +47,6 @@
       padding-bottom: 20px;
     }
 
-    /* Moderne zwevende kaarten */
     .card {
       background: var(--card-bg);
       border-radius: 20px;
@@ -59,35 +56,17 @@
       border: none;
     }
 
-    h2 {
-      margin: 0 0 16px 0;
-      font-size: 22px;
-      font-weight: 700;
-      text-align: center;
-      letter-spacing: -0.5px;
-    }
+    h2 { margin: 0 0 16px 0; font-size: 22px; font-weight: 700; text-align: center; letter-spacing: -0.5px; }
+    h3 { margin-top: 0; margin-bottom: 12px; font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
 
-    h3 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
+    label { display: block; font-weight: 500; font-size: 13px; color: var(--text-muted); }
 
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    /* Strakkere invoervelden */
+    /* Strakkere en uitgelijnde invoervelden */
     input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
       width: 100%;
-      padding: 12px 14px;
-      margin-bottom: 12px;
+      height: 44px; /* Vaste hoogte voor perfecte uitlijning */
+      padding: 0 12px;
+      margin: 0;
       border: 1px solid var(--border);
       border-radius: 12px;
       background-color: #fafafa;
@@ -104,7 +83,6 @@
       box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
-    /* Moderne knoppen */
     button {
       background-color: var(--primary);
       color: white;
@@ -118,159 +96,88 @@
       box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
     }
 
-    button:active {
-      transform: scale(0.96);
-    }
+    button:active { transform: scale(0.96); }
+    .btn-small { padding: 8px 14px; font-size: 14px; border-radius: 10px; }
+    .btn-secondary { background-color: #e5e5ea; color: var(--text-main); box-shadow: none; }
+    .btn-danger { background-color: var(--danger); box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2); }
 
-    .btn-small {
-      padding: 8px 14px;
-      font-size: 14px;
-      border-radius: 10px;
-    }
-
-    .btn-secondary {
-      background-color: #e5e5ea;
-      color: var(--text-main);
-      box-shadow: none;
-    }
-
-    .btn-danger {
-      background-color: var(--danger);
-      box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
-    }
-
-    /* Datum nav */
-    .date-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .date-nav button {
-      width: 44px;
-      height: 44px;
-      padding: 0;
-      font-size: 16px;
-      border-radius: 12px;
-      background-color: #e5e5ea;
-      color: var(--text-main);
-      box-shadow: none;
-    }
+    .date-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .date-nav button { width: 44px; height: 44px; padding: 0; font-size: 16px; border-radius: 12px; background-color: #e5e5ea; color: var(--text-main); box-shadow: none; }
     
     .date-picker-wrapper {
-      position: relative;
-      flex-grow: 1;
-      height: 44px;
-      background-color: #f2f2f7;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--primary);
-      text-align: center;
+      position: relative; flex-grow: 1; height: 44px; background-color: #f2f2f7;
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600; color: var(--primary); text-align: center;
     }
-    .date-picker-wrapper input[type="date"] {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0; cursor: pointer; padding: 0;
-    }
+    .date-picker-wrapper input[type="date"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; padding: 0; }
 
-    /* Energie Kaarten (Zachter ontwerp) */
+    /* Nieuwe lay-out Energie Kaarten */
     .energy-card {
       background: #fafafa;
       border: 1px solid var(--border);
       border-left: 6px solid var(--success);
       margin-bottom: 12px;
-      padding: 12px 14px;
+      padding: 14px;
       border-radius: 12px;
       transition: border-color 0.3s;
     }
-    .energy-meta {
-      font-weight: 600;
-      font-size: 13px;
-      margin-top: 6px;
-    }
+    .energy-row-1 { display: flex; align-items: center; gap: 12px; }
+    .energy-label { font-weight: 600; font-size: 14px; color: var(--text-main); min-width: 75px; }
+    .energy-row-2 { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+    .energy-meta { font-weight: 600; font-size: 13px; }
 
-    /* Moderne Sliders */
+    /* Slankere Sliders */
     input[type="range"] {
       -webkit-appearance: none;
-      width: 100%;
-      height: 8px;
+      flex-grow: 1;
+      height: 6px;
       background: linear-gradient(to right, #ff3b30, #ffcc00, #34c759);
-      border-radius: 4px;
-      margin: 12px 0;
+      border-radius: 3px;
       outline: none;
+      margin: 0;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       background: #ffffff;
-      border: 2px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       cursor: pointer;
     }
 
-    /* Grid Layouts voor velden */
-    .flex-gap { display: flex; gap: 10px; align-items: center; }
-    .input-row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 4px; }
-    .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-    .compact-field label { font-size: 12px; margin-bottom: 4px; }
+    /* Grid Layouts voor strakke velden */
+    .flex-gap { display: flex; gap: 12px; align-items: center; }
+    .input-row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .compact-field { display: flex; flex-direction: column; }
+    .compact-field label { font-size: 12px; margin-bottom: 6px; white-space: nowrap; }
     .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
+    #actName { text-align: left; padding-left: 12px; } /* Activiteit naam links uitgelijnd */
 
-    /* Logboek Lijst */
     .entry {
-      background: #fafafa;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
+      background: #fafafa; border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between;
+      align-items: center; font-size: 14px;
     }
-    .badge {
-      background: #e1f0ff;
-      color: var(--primary);
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-    }
+    .badge { background: #e1f0ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+    .chart-container { position: relative; height: 260px; width: 100%; margin-top: 10px; }
 
-    .chart-container {
-      position: relative;
-      height: 260px;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    /* Modals (Popups) */
     .modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4); z-index: 1000;
-      justify-content: center; align-items: center;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center;
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     }
     .modal-content {
-      background: #fff; padding: 24px; border-radius: 24px;
-      width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      background: #fff; padding: 24px; border-radius: 24px; width: 90%; max-width: 400px;
+      max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
-    .db-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-    }
+    .db-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .db-item:last-child { border-bottom: none; }
     .star-btn { background: none; border: none; font-size: 20px; box-shadow: none; padding: 0 8px; color: #d1d1d6; }
     .star-btn.active { color: #ffcc00; }
-
-    /* Inlogscherm */
+    
     .google-btn {
       background-color: #fff; color: #333; border: 1px solid var(--border);
       padding: 14px 20px; font-size: 16px; border-radius: 12px;
@@ -284,12 +191,10 @@
 
 <div class="container">
   
-  <!-- Laadscherm -->
   <div id="loadingScreen" class="card" style="text-align: center; padding: 60px 20px;">
     <h3>Verbinding maken... ⏳</h3>
   </div>
 
-  <!-- Inlogscherm -->
   <div id="authScreen" class="card" style="display: none; text-align: center; padding: 50px 20px;">
     <h2 style="color: var(--primary);">MET Tracker</h2>
     <p style="margin-bottom: 30px; font-size: 15px; color: var(--text-muted); line-height: 1.5;">
@@ -301,7 +206,6 @@
     </button>
   </div>
 
-  <!-- Hoofd App -->
   <div id="appContainer" style="display: none;">
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px;">
@@ -321,39 +225,47 @@
       </div>
     </div>
 
-    <!-- Energieniveau Scores -->
+    <!-- Energieniveau Scores (Nieuwe Layout) -->
     <div class="card">
       <h3>Energieniveau</h3>
       <div class="energy-card" id="cardOchtend">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label style="margin: 0; font-size: 14px; color: var(--text-main);">🌅 Ochtend: <strong id="valOchtend">10</strong></label>
-          <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 6px 12px; min-width: 75px;">Opslaan</button>
+        <div class="energy-row-1">
+          <div class="energy-label">🌅 Ochtend</div>
+          <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
         </div>
-        <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
-        <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
+        <div class="energy-row-2">
+          <div class="energy-meta" id="metaOchtend">🟢 10 - Fit / Volledige energie</div>
+          <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="min-width: 80px;">Opslaan</button>
+        </div>
       </div>
+      
       <div class="energy-card" id="cardAvond">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label style="margin: 0; font-size: 14px; color: var(--text-main);">🌙 Avond: <strong id="valAvond">10</strong></label>
-          <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="padding: 6px 12px; min-width: 75px;">Opslaan</button>
+        <div class="energy-row-1">
+          <div class="energy-label">🌙 Avond</div>
+          <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
         </div>
-        <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
-        <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
+        <div class="energy-row-2">
+          <div class="energy-meta" id="metaAvond">🟢 10 - Fit / Volledige energie</div>
+          <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="min-width: 80px;">Opslaan</button>
+        </div>
       </div>
     </div>
 
-    <!-- MET Invoer -->
+    <!-- MET Invoer (Strak uitgelijnd) -->
     <div class="card" id="inputCard">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">Activiteit Toevoegen</h3>
         <button onclick="openDbModal()" class="btn-secondary btn-small" style="font-size: 12px;">⚙️ Lijst</button>
       </div>
-      <select id="presetSelect" onchange="selectPreset()"></select>
+      
+      <div style="margin-bottom: 12px;">
+        <select id="presetSelect" onchange="selectPreset()"></select>
+      </div>
       
       <div class="input-row-2">
         <div class="compact-field">
           <label>Activiteit Naam</label>
-          <input type="text" id="actName" placeholder="Bijv. Wandelen" style="text-align: left;">
+          <input type="text" id="actName" placeholder="Bijv. Wandelen">
         </div>
         <div class="compact-field">
           <label>MET-score</label>
@@ -433,7 +345,7 @@
       <div class="flex-gap" style="margin-top: 8px;">
         <input type="text" id="newDbName" placeholder="Naam" style="margin:0; flex: 2;">
         <input type="number" id="newDbMet" step="0.1" placeholder="MET" style="margin:0; flex: 1;">
-        <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small" style="padding: 0 16px;">+</button>
+        <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small" style="padding: 0 16px; height: 44px;">+</button>
       </div>
     </div>
     <div id="dbListContainer" style="max-height: 40vh; overflow-y: auto; padding-right: 4px;"></div>
@@ -451,7 +363,6 @@
 </div>
 
 <script>
-  // 1. FIREBASE INITIALISATIE (Ongewijzigd)
   const firebaseConfig = {
     apiKey: "AIzaSyANPviv1SCJMGBRcHKKy8bFVSB64VzCmqk",
     authDomain: "met-scores.firebaseapp.com",
@@ -468,7 +379,6 @@
   
   let currentUser = null;
 
-  // 2. DATA STRUCTUUR (Ongewijzigd)
   const defaultPresets = [
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
@@ -500,7 +410,6 @@
     1:  { text: "🟣 1 - Crash", color: "#5e5ce6" }
   };
 
-  // 3. AUTHENTICATIE (Ongewijzigd)
   function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch((e) => alert("Inloggen mislukt."));
@@ -545,9 +454,7 @@
     render();
   }
 
-  // 4. APP LOGICA
   function updateMeta(type, val) {
-    document.getElementById('val' + type).innerText = val;
     const meta = energyMetaMap[val] || energyMetaMap[10];
     const metaDiv = document.getElementById('meta' + type);
     const card = document.getElementById('card' + type);
