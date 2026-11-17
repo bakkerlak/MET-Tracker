@@ -13,292 +13,271 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Firebase Scripts (Compat v8 voor simpele integratie) -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
   <style>
     :root {
-      --bg-color: #f4f4f9;
+      /* Moderne iOS Light Theme kleuren */
+      --bg-color: #f2f2f7;
       --card-bg: #ffffff;
-      --primary: #4a90e2;
-      --text: #333333;
-      --border: #dddddd;
-      --danger: #e74c3c;
-      --thumb-ochtend: #2ecc71;
-      --thumb-avond: #2ecc71;
-      --edit-color: #f39c12;
+      --primary: #007aff;
+      --primary-hover: #005bb5;
+      --text-main: #1c1c1e;
+      --text-muted: #8e8e93;
+      --border: #e5e5ea;
+      --danger: #ff3b30;
+      --success: #34c759;
+      --edit-color: #ff9500;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
     }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
-      color: var(--text);
+      color: var(--text-main);
       margin: 0;
-      padding: 12px;
+      padding: 16px 12px;
       -webkit-tap-highlight-color: transparent;
     }
+
     .container {
       max-width: 500px;
       margin: 0 auto;
+      padding-bottom: 20px;
     }
+
+    /* Moderne zwevende kaarten */
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      border-radius: 20px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border: none;
     }
+
     h2 {
-      margin: 4px 0 12px 0;
-      font-size: 20px;
+      margin: 0 0 16px 0;
+      font-size: 22px;
+      font-weight: 700;
       text-align: center;
+      letter-spacing: -0.5px;
     }
+
     h3 {
       margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 16px;
-      color: #1a1a1a;
+      margin-bottom: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
     }
+
     label {
       display: block;
-      margin-bottom: 4px;
-      font-weight: 600;
+      margin-bottom: 6px;
+      font-weight: 500;
       font-size: 13px;
+      color: var(--text-muted);
     }
+
+    /* Strakkere invoervelden */
     input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
       width: 100%;
-      padding: 8px 10px;
-      margin-bottom: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 12px;
+      background-color: #fafafa;
       box-sizing: border-box;
-      font-size: 14px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      color: var(--text-main);
     }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    }
+
+    /* Moderne knoppen */
     button {
       background-color: var(--primary);
       color: white;
       font-weight: 600;
       border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-size: 14px;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 15px;
       cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.1s ease;
+      transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
     }
+
     button:active {
       transform: scale(0.96);
     }
+
     .btn-small {
-      width: auto;
-      padding: 6px 12px;
-      font-size: 13px;
+      padding: 8px 14px;
+      font-size: 14px;
+      border-radius: 10px;
     }
+
     .btn-secondary {
-      background-color: #7f8c8d;
+      background-color: #e5e5ea;
+      color: var(--text-main);
+      box-shadow: none;
     }
+
     .btn-danger {
       background-color: var(--danger);
+      box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
     }
-    
+
+    /* Datum nav */
     .date-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
+      gap: 10px;
     }
     .date-nav button {
-      width: 40px;
-      height: 38px;
+      width: 44px;
+      height: 44px;
       padding: 0;
       font-size: 16px;
-      flex-shrink: 0;
+      border-radius: 12px;
+      background-color: #e5e5ea;
+      color: var(--text-main);
+      box-shadow: none;
     }
+    
     .date-picker-wrapper {
       position: relative;
       flex-grow: 1;
-      height: 38px;
-      background-color: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      height: 44px;
+      background-color: #f2f2f7;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--primary);
       text-align: center;
-      padding: 0 4px;
-      box-sizing: border-box;
     }
     .date-picker-wrapper input[type="date"] {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      margin: 0;
-      padding: 0;
-      -webkit-appearance: none;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; padding: 0;
     }
 
+    /* Energie Kaarten (Zachter ontwerp) */
     .energy-card {
-      border-left: 6px solid #2ecc71;
-      margin-bottom: 8px;
-      padding: 8px 10px;
       background: #fafafa;
-      border-radius: 6px;
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--success);
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      transition: border-color 0.3s;
     }
     .energy-meta {
-      font-weight: bold;
-      font-size: 12px;
-      margin-top: 2px;
+      font-weight: 600;
+      font-size: 13px;
+      margin-top: 6px;
     }
 
+    /* Moderne Sliders */
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
-      height: 6px;
-      background: #e0e0e0;
-      border-radius: 3px;
-      margin: 6px 0;
+      height: 8px;
+      background: linear-gradient(to right, #ff3b30, #ffcc00, #34c759);
+      border-radius: 4px;
+      margin: 12px 0;
       outline: none;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
+      background: #ffffff;
+      border: 2px solid var(--border);
       border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-      transition: background-color 0.2s ease;
-    }
-    #eOchtend::-webkit-slider-thumb { background: var(--thumb-ochtend, #2ecc71); }
-    #eAvond::-webkit-slider-thumb { background: var(--thumb-avond, #2ecc71); }
-
-    .flex-gap {
-      display: flex;
-      gap: 8px;
-      align-items: center;
     }
 
-    .input-row-2 {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .input-row-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .compact-field {
-      display: flex;
-      flex-direction: column;
-    }
-    .compact-field label {
-      font-size: 11px;
-      margin-bottom: 2px;
-      white-space: nowrap;
-    }
-    .compact-field input {
-      margin-bottom: 0;
-      padding: 0 6px;
-      height: 38px;
-      font-size: 14px;
-      background-color: #ffffff;
-      -webkit-appearance: none;
-    }
-    .text-center { text-align: center; }
-    .text-left { text-align: left; }
+    /* Grid Layouts voor velden */
+    .flex-gap { display: flex; gap: 10px; align-items: center; }
+    .input-row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 4px; }
+    .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+    .compact-field label { font-size: 12px; margin-bottom: 4px; }
+    .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
 
+    /* Logboek Lijst */
     .entry {
-      border-bottom: 1px solid var(--border);
-      padding: 6px 0;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 14px;
-    }
-    .entry:last-child {
-      border-bottom: none;
     }
     .badge {
       background: #e1f0ff;
       color: var(--primary);
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .chart-container {
       position: relative;
-      height: 240px;
+      height: 260px;
       width: 100%;
+      margin-top: 10px;
     }
 
-    /* Modal Styling */
+    /* Modals (Popups) */
     .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4); z-index: 1000;
+      justify-content: center; align-items: center;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
     .modal-content {
-      background: #fff;
-      padding: 16px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 450px;
-      max-height: 85vh;
-      overflow-y: auto;
+      background: #fff; padding: 24px; border-radius: 24px;
+      width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
     .db-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
     }
-    .star-btn {
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 0 6px;
-      color: #ccc;
-    }
-    .star-btn.active {
-      color: #f1c40f;
-    }
-    #fileInput { display: none; }
+    .db-item:last-child { border-bottom: none; }
+    .star-btn { background: none; border: none; font-size: 20px; box-shadow: none; padding: 0 8px; color: #d1d1d6; }
+    .star-btn.active { color: #ffcc00; }
 
+    /* Inlogscherm */
     .google-btn {
-      background-color: #ffffff;
-      color: #757575;
-      border: 1px solid #ddd;
-      padding: 10px 16px;
-      font-size: 15px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background-color: #fff; color: #333; border: 1px solid var(--border);
+      padding: 14px 20px; font-size: 16px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-weight: 600;
     }
-    .google-btn img {
-      width: 18px;
-    }
+    .google-btn img { width: 20px; }
   </style>
 </head>
 <body>
@@ -306,28 +285,28 @@
 <div class="container">
   
   <!-- Laadscherm -->
-  <div id="loadingScreen" class="card" style="text-align: center; padding: 40px 20px;">
-    <h3>Verbinding maken met de Cloud... ⏳</h3>
+  <div id="loadingScreen" class="card" style="text-align: center; padding: 60px 20px;">
+    <h3>Verbinding maken... ⏳</h3>
   </div>
 
-  <!-- Inlogscherm (Zichtbaar als uitgelogd) -->
-  <div id="authScreen" class="card" style="display: none; text-align: center; padding: 40px 20px;">
-    <h2 style="color: var(--primary);">MET & Energie Tracker</h2>
-    <p style="margin-bottom: 24px; font-size: 14px; color: #555;">
-      Welkom! Log veilig in met Google om je gegevens permanent en veilig in de cloud op te slaan.
+  <!-- Inlogscherm -->
+  <div id="authScreen" class="card" style="display: none; text-align: center; padding: 50px 20px;">
+    <h2 style="color: var(--primary);">MET Tracker</h2>
+    <p style="margin-bottom: 30px; font-size: 15px; color: var(--text-muted); line-height: 1.5;">
+      Welkom! Log veilig in met Google om je energie en activiteiten in de cloud te bewaren.
     </p>
     <button onclick="loginWithGoogle()" class="google-btn">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google G">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
       Inloggen met Google
     </button>
   </div>
 
-  <!-- Hoofd App (Zichtbaar als ingelogd) -->
+  <!-- Hoofd App -->
   <div id="appContainer" style="display: none;">
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h2 style="margin: 0; font-size: 18px;">MET Tracker</h2>
-      <button onclick="logout()" class="btn-secondary btn-small" style="font-size: 11px; padding: 4px 8px;">Uitloggen</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px;">
+      <h2 style="margin: 0;">Mijn Dag</h2>
+      <button onclick="logout()" class="btn-secondary btn-small" style="font-size: 12px;">Uitloggen</button>
     </div>
 
     <!-- Datum Selectie -->
@@ -344,81 +323,88 @@
 
     <!-- Energieniveau Scores -->
     <div class="card">
-      <h3 style="margin-bottom: 12px;">Energieniveau</h3>
+      <h3>Energieniveau</h3>
       <div class="energy-card" id="cardOchtend">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <label for="eOchtend" style="margin-bottom: 0;">🌅 Begin van de dag: <span id="valOchtend">10</span>/10</label>
-          <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="margin: 0; font-size: 14px; color: var(--text-main);">🌅 Ochtend: <strong id="valOchtend">10</strong></label>
+          <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="padding: 6px 12px; min-width: 75px;">Opslaan</button>
         </div>
         <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
         <div class="energy-meta" id="metaOchtend">🟢 Fit / Volledige energie</div>
       </div>
       <div class="energy-card" id="cardAvond">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <label for="eAvond" style="margin-bottom: 0;">🌙 Einde van de dag: <span id="valAvond">10</span>/10</label>
-          <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="padding: 4px 10px; font-size: 13px; min-width: 70px;">Opslaan</button>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="margin: 0; font-size: 14px; color: var(--text-main);">🌙 Avond: <strong id="valAvond">10</strong></label>
+          <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="padding: 6px 12px; min-width: 75px;">Opslaan</button>
         </div>
         <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
         <div class="energy-meta" id="metaAvond">🟢 Fit / Volledige energie</div>
       </div>
     </div>
 
-    <!-- MET Invoer & Database Snelkeuze -->
+    <!-- MET Invoer -->
     <div class="card" id="inputCard">
-      <h3>Activiteit Toevoegen</h3>
-      <label for="presetSelect">Kies uit MET-Database:</label>
-      <select id="presetSelect" onchange="selectPreset()"></select>
-      <div style="text-align: right; margin-bottom: 12px;">
-        <button onclick="openDbModal()" class="btn-secondary btn-small">⚙️ Beheer MET-Lijst & Favorieten</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;">Activiteit Toevoegen</h3>
+        <button onclick="openDbModal()" class="btn-secondary btn-small" style="font-size: 12px;">⚙️ Lijst</button>
       </div>
+      <select id="presetSelect" onchange="selectPreset()"></select>
+      
       <div class="input-row-2">
         <div class="compact-field">
-          <label for="actName">Activiteit Naam</label>
-          <input type="text" id="actName" class="text-left" placeholder="bijv. Wandelen">
+          <label>Activiteit Naam</label>
+          <input type="text" id="actName" placeholder="Bijv. Wandelen" style="text-align: left;">
         </div>
         <div class="compact-field">
-          <label for="metVal">MET-score</label>
-          <input type="number" id="metVal" class="text-center" step="0.1" placeholder="2.5">
+          <label>MET-score</label>
+          <input type="number" id="metVal" step="0.1" placeholder="2.5">
         </div>
       </div>
+      
       <div class="input-row-3">
         <div class="compact-field">
-          <label for="startTime">Starttijd</label>
-          <input type="time" id="startTime" class="text-center">
+          <label>Starttijd</label>
+          <input type="time" id="startTime">
         </div>
         <div class="compact-field">
-          <label for="durHours">Uren</label>
-          <input type="number" id="durHours" class="text-center" min="0" max="24" placeholder="0u">
+          <label>Uren</label>
+          <input type="number" id="durHours" min="0" max="24" placeholder="0u">
         </div>
         <div class="compact-field">
-          <label for="durMins">Minuten</label>
-          <input type="number" id="durMins" class="text-center" min="0" max="59" placeholder="30m">
+          <label>Minuten</label>
+          <input type="number" id="durMins" min="0" max="59" placeholder="30m">
         </div>
       </div>
-      <div style="text-align: right; margin-top: 8px;">
-        <button id="saveActBtn" onclick="addOrUpdateActivity()" class="btn-small">Activiteit Opslaan</button>
-      </div>
+      
+      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%; margin-top: 8px;">Activiteit Opslaan</button>
     </div>
 
-    <!-- Dagoverzicht & Logboek -->
+    <!-- Logboek -->
     <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="margin: 0;">Logboek <br><span class="logDateSubtitle" style="font-size: 13px; font-weight: normal; color: var(--primary);"></span></h3>
-        <button onclick="openCopyModal()" class="btn-secondary btn-small" style="font-size: 12px; padding: 4px 8px;">📄 Kopieer Dag</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <h3 style="margin: 0;">Logboek</h3>
+          <div class="logDateSubtitle" style="font-size: 13px; color: var(--text-muted); margin-top: 2px;"></div>
+        </div>
+        <button onclick="openCopyModal()" class="btn-secondary btn-small" style="font-size: 12px;">📄 Kopieer Dag</button>
       </div>
-      <div id="logList">Nog geen activiteiten ingevoerd.</div>
-      <hr style="border:none; border-top:1px solid #ddd; margin: 8px 0;">
-      <p style="margin:0; font-size: 14px;"><strong>Totaal MET-punten: </strong><span id="totalMET" style="font-size:16px; color:var(--primary);">0</span></p>
+      
+      <div id="logList"></div>
+      
+      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 15px; font-weight: 600;">Totaal MET-punten:</span>
+        <span id="totalMET" style="font-size: 18px; font-weight: 700; color: var(--primary);">0</span>
+      </div>
     </div>
 
     <!-- Grafiek Afgelopen 7 Dagen -->
     <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <h3 style="margin: 0;">📈 Grafiek</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <h3 style="margin: 0;">Weekoverzicht</h3>
         <div style="display: flex; align-items: center; gap: 6px;">
-          <button onclick="shiftChart(-1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">◀</button>
-          <span id="chartEndDisplay" style="font-size: 13px; font-weight: bold; min-width: 45px; text-align: center;"></span>
-          <button onclick="shiftChart(1)" class="btn-secondary btn-small" style="padding: 4px 10px; margin: 0; font-size: 14px;">▶</button>
+          <button onclick="shiftChart(-1)" class="btn-secondary btn-small">◀</button>
+          <span id="chartEndDisplay" style="font-size: 14px; font-weight: 600; min-width: 45px; text-align: center;"></span>
+          <button onclick="shiftChart(1)" class="btn-secondary btn-small">▶</button>
         </div>
       </div>
       <div class="chart-container">
@@ -426,13 +412,13 @@
       </div>
     </div>
 
-    <!-- Data Beheer Opties -->
+    <!-- Instellingen -->
     <div class="card">
-      <h3>Data Beheer</h3>
-      <div class="flex-gap" style="margin-bottom: 8px;">
-        <button onclick="exportData()" class="btn-secondary btn-small" style="flex:1;">Exporteer (Handmatig)</button>
+      <h3>Instellingen & Data</h3>
+      <div class="flex-gap" style="margin-bottom: 10px;">
+        <button onclick="exportData()" class="btn-secondary btn-small" style="flex:1; padding: 10px;">Exporteer Data</button>
       </div>
-      <button onclick="clearAllData()" class="btn-danger btn-small" style="width:100%;">Wis Alle Data</button>
+      <button onclick="clearAllData()" class="btn-danger btn-small" style="width:100%; padding: 10px;">Wis Alle Gegevens</button>
     </div>
   </div>
 
@@ -441,36 +427,31 @@
 <!-- Modals -->
 <div class="modal" id="dbModal">
   <div class="modal-content">
-    <h3>⚙️ Beheer MET-Lijst & Favorieten</h3>
-    <p style="font-size:12px; color:#666;">Klik op ⭐ voor favorieten. Klik op ✏️ om de naam of score te bewerken.</p>
-    <div style="background:#f9f9f9; padding:8px; border-radius:6px; margin-bottom:12px;">
-      <label style="font-size:12px;" id="dbFormLabel">Nieuwe activiteit toevoegen:</label>
-      <div class="flex-gap">
-        <input type="text" id="newDbName" placeholder="Naam" style="margin:0;">
-        <input type="number" id="newDbMet" step="0.1" placeholder="MET" style="width:70px; margin:0;">
-        <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small">+</button>
+    <h3 style="text-align: center; margin-bottom: 16px;">Favorieten & Lijst</h3>
+    <div style="background: var(--bg-color); padding: 16px; border-radius: 16px; margin-bottom: 16px;">
+      <label id="dbFormLabel" style="font-weight: 600; color: var(--text-main);">Nieuwe activiteit toevoegen:</label>
+      <div class="flex-gap" style="margin-top: 8px;">
+        <input type="text" id="newDbName" placeholder="Naam" style="margin:0; flex: 2;">
+        <input type="number" id="newDbMet" step="0.1" placeholder="MET" style="margin:0; flex: 1;">
+        <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small" style="padding: 0 16px;">+</button>
       </div>
     </div>
-    <div id="dbListContainer"></div>
-    <div style="text-align: right; margin-top: 12px;">
-      <button onclick="closeDbModal()" class="btn-small">Sluiten</button>
-    </div>
+    <div id="dbListContainer" style="max-height: 40vh; overflow-y: auto; padding-right: 4px;"></div>
+    <button onclick="closeDbModal()" class="btn-secondary" style="width: 100%; margin-top: 16px;">Sluiten</button>
   </div>
 </div>
 
 <div class="modal" id="copyModal">
   <div class="modal-content">
-    <h3>📄 Kopieer Activiteiten</h3>
-    <p style="font-size:12px; color:#666;">Kies een eerdere dag (aangegeven met een ●) om deze naar vandaag te kopiëren.</p>
-    <div id="copyListContainer" style="margin-top: 12px; max-height: 50vh; overflow-y: auto;"></div>
-    <div style="text-align: right; margin-top: 12px;">
-      <button onclick="closeCopyModal()" class="btn-secondary btn-small">Annuleren</button>
-    </div>
+    <h3 style="text-align: center;">Kopieer Activiteiten</h3>
+    <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Kies een eerdere dag om naar vandaag te kopiëren.</p>
+    <div id="copyListContainer" style="max-height: 50vh; overflow-y: auto;"></div>
+    <button onclick="closeCopyModal()" class="btn-secondary" style="width: 100%; margin-top: 16px;">Annuleren</button>
   </div>
 </div>
 
 <script>
-  // 1. FIREBASE INITIALISATIE
+  // 1. FIREBASE INITIALISATIE (Ongewijzigd)
   const firebaseConfig = {
     apiKey: "AIzaSyANPviv1SCJMGBRcHKKy8bFVSB64VzCmqk",
     authDomain: "met-scores.firebaseapp.com",
@@ -487,7 +468,7 @@
   
   let currentUser = null;
 
-  // 2. DATA STRUCTUUR & STANDAARDEN
+  // 2. DATA STRUCTUUR (Ongewijzigd)
   const defaultPresets = [
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
@@ -496,48 +477,35 @@
     { name: "Fietsen (10 km/u)", met: 4.0, fav: true }
   ];
 
-  let trackerData = {
-    energyLogs: {},
-    activities: [],
-    customDb: defaultPresets
-  };
-
+  let trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   let chartEndDate = new Date().toISOString().split('T')[0];
-
-  const now = new Date();
-  document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
+  document.getElementById('startTime').value = new Date().toTimeString().slice(0, 5);
 
   let historyChart = null;
   let currentEditId = null;
   let currentDbEditIndex = null; 
 
   const energyMetaMap = {
-    10: { text: "🟢 10 - Fit / Volledige energie", color: "#2ecc71" },
-    9:  { text: "🟢 9 - Zeer goed", color: "#27ae60" },
-    8:  { text: "🟡 8 - Goed", color: "#f1c40f" },
-    7:  { text: "🟡 7 - Redelijk", color: "#f39c12" },
-    6:  { text: "🟠 6 - Matige energie", color: "#e67e22" },
-    5:  { text: "🟠 5 - Laag energieniveau", color: "#d35400" },
-    4:  { text: "🔴 4 - Erg moe", color: "#e74c3c" },
-    3:  { text: "🔴 3 - Uitgeput", color: "#c0392b" },
-    2:  { text: "🟣 2 - Extreem leeg", color: "#8e44ad" },
-    1:  { text: "🟣 1 - Crash", color: "#6c3483" }
+    10: { text: "🟢 10 - Fit / Volledige energie", color: "#34c759" },
+    9:  { text: "🟢 9 - Zeer goed", color: "#30b753" },
+    8:  { text: "🟡 8 - Goed", color: "#ffcc00" },
+    7:  { text: "🟡 7 - Redelijk", color: "#ffb340" },
+    6:  { text: "🟠 6 - Matige energie", color: "#ff9500" },
+    5:  { text: "🟠 5 - Laag energieniveau", color: "#ff6b22" },
+    4:  { text: "🔴 4 - Erg moe", color: "#ff3b30" },
+    3:  { text: "🔴 3 - Uitgeput", color: "#d32f2f" },
+    2:  { text: "🟣 2 - Extreem leeg", color: "#af52de" },
+    1:  { text: "🟣 1 - Crash", color: "#5e5ce6" }
   };
 
-  // 3. AUTHENTICATIE LOGICA (Popup in plaats van Redirect voor iOS)
+  // 3. AUTHENTICATIE (Ongewijzigd)
   function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch((error) => {
-      console.error("Fout bij inloggen:", error);
-      alert("Inloggen geannuleerd of mislukt. Probeer het opnieuw.");
-    });
+    auth.signInWithPopup(provider).catch((e) => alert("Inloggen mislukt."));
   }
-
-  function logout() {
-    auth.signOut();
-  }
+  function logout() { auth.signOut(); }
 
   auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -561,10 +529,7 @@
             trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
           }
         }
-      } catch (e) {
-        console.error("Fout bij ophalen cloud data", e);
-      }
-      
+      } catch (e) { console.error(e); }
       render();
     } else {
       currentUser = null;
@@ -574,17 +539,13 @@
     }
   });
 
-  // 4. DATA OPSLAAN (CLOUD)
   function saveData() {
     localStorage.setItem('metTrackerData', JSON.stringify(trackerData));
-    if (currentUser) {
-      db.collection('users').doc(currentUser.uid).set(trackerData)
-        .catch(err => console.error("Cloud opslag fout:", err));
-    }
+    if (currentUser) db.collection('users').doc(currentUser.uid).set(trackerData);
     render();
   }
 
-  // 5. DE REST VAN DE APP LOGICA
+  // 4. APP LOGICA
   function updateMeta(type, val) {
     document.getElementById('val' + type).innerText = val;
     const meta = energyMetaMap[val] || energyMetaMap[10];
@@ -594,38 +555,35 @@
     metaDiv.innerText = meta.text;
     metaDiv.style.color = meta.color;
     card.style.borderLeftColor = meta.color;
-    document.documentElement.style.setProperty(`--thumb-${type.toLowerCase()}`, meta.color);
 
     const btn = document.getElementById('btnSave' + type);
     if (btn && btn.innerText !== "Opslaan") {
       btn.innerText = "Opslaan";
       btn.style.backgroundColor = "var(--primary)";
+      btn.style.color = "white";
     }
   }
 
   function saveEnergy(type) {
     if (!trackerData.energyLogs[currentDate]) trackerData.energyLogs[currentDate] = {};
-    
     let btn;
     if (type === 'ochtend') {
       trackerData.energyLogs[currentDate].ochtend = document.getElementById('eOchtend').value;
       btn = document.getElementById('btnSaveOchtend');
-    } else if (type === 'avond') {
+    } else {
       trackerData.energyLogs[currentDate].avond = document.getElementById('eAvond').value;
       btn = document.getElementById('btnSaveAvond');
     }
-    
     saveData();
-    
     if (btn) {
-      btn.innerText = "✓";
-      btn.style.backgroundColor = "#2ecc71";
+      btn.innerText = "✓ Opgeslagen";
+      btn.style.backgroundColor = "var(--success)";
     }
   }
 
   function renderPresetDropdown() {
     const select = document.getElementById('presetSelect');
-    select.innerHTML = '<option value="">-- Kies uit MET-Database --</option>';
+    select.innerHTML = '<option value="">-- Kies uit lijst --</option>';
     const sorted = [...trackerData.customDb].sort((a, b) => {
       if (b.fav !== a.fav) return b.fav - a.fav;
       return a.name.localeCompare(b.name);
@@ -648,21 +606,14 @@
   }
 
   function shiftDate(offset) {
-    let d = new Date(currentDate);
-    d.setDate(d.getDate() + offset);
+    let d = new Date(currentDate); d.setDate(d.getDate() + offset);
     currentDate = d.toISOString().split('T')[0];
     document.getElementById('selectedDate').value = currentDate;
     render();
   }
-
-  function changeDate() {
-    currentDate = document.getElementById('selectedDate').value;
-    render();
-  }
-
+  function changeDate() { currentDate = document.getElementById('selectedDate').value; render(); }
   function shiftChart(offset) {
-    let d = new Date(chartEndDate);
-    d.setDate(d.getDate() + offset);
+    let d = new Date(chartEndDate); d.setDate(d.getDate() + offset);
     chartEndDate = d.toISOString().split('T')[0];
     renderChart();
   }
@@ -671,67 +622,38 @@
     const name = document.getElementById('actName').value;
     const startTime = document.getElementById('startTime').value || "00:00";
     const met = parseFloat(document.getElementById('metVal').value);
-    
     const hrs = parseInt(document.getElementById('durHours').value) || 0;
     const mins = parseInt(document.getElementById('durMins').value) || 0;
     const totalMinutes = (hrs * 60) + mins;
 
-    if (!name || isNaN(met) || totalMinutes <= 0) {
-      alert('Vul a.u.b. een naam, MET-score en een geldige duur in.');
-      return;
-    }
+    if (!name || isNaN(met) || totalMinutes <= 0) { alert('Vul alles correct in.'); return; }
 
     const points = (met * (totalMinutes / 60)).toFixed(1);
 
     if (currentEditId) {
       const index = trackerData.activities.findIndex(a => a.id === currentEditId);
       if (index !== -1) {
-        trackerData.activities[index] = {
-          ...trackerData.activities[index],
-          time: startTime,
-          name: name,
-          met: met,
-          hours: hrs,
-          minutes: mins,
-          duration: totalMinutes,
-          points: parseFloat(points)
-        };
+        trackerData.activities[index] = { ...trackerData.activities[index], time: startTime, name, met, hours: hrs, minutes: mins, duration: totalMinutes, points: parseFloat(points) };
       }
       currentEditId = null;
       const btn = document.getElementById('saveActBtn');
       btn.innerText = "Activiteit Opslaan";
       btn.style.backgroundColor = "var(--primary)";
     } else {
-      trackerData.activities.push({
-        id: Date.now(),
-        date: currentDate,
-        time: startTime,
-        name: name,
-        met: met,
-        hours: hrs,
-        minutes: mins,
-        duration: totalMinutes,
-        points: parseFloat(points)
-      });
+      trackerData.activities.push({ id: Date.now(), date: currentDate, time: startTime, name, met, hours: hrs, minutes: mins, duration: totalMinutes, points: parseFloat(points) });
     }
 
-    document.getElementById('actName').value = '';
-    document.getElementById('metVal').value = '';
-    document.getElementById('durHours').value = '';
-    document.getElementById('durMins').value = '';
+    document.getElementById('actName').value = ''; document.getElementById('metVal').value = '';
+    document.getElementById('durHours').value = ''; document.getElementById('durMins').value = '';
     document.getElementById('presetSelect').value = '';
-
     saveData();
   }
 
   function editAct(id) {
     const act = trackerData.activities.find(a => a.id === id);
     if (!act) return;
-    document.getElementById('actName').value = act.name;
-    document.getElementById('metVal').value = act.met;
-    document.getElementById('startTime').value = act.time;
-    document.getElementById('durHours').value = act.hours || 0;
-    document.getElementById('durMins').value = act.minutes || 0;
+    document.getElementById('actName').value = act.name; document.getElementById('metVal').value = act.met;
+    document.getElementById('startTime').value = act.time; document.getElementById('durHours').value = act.hours || 0; document.getElementById('durMins').value = act.minutes || 0;
 
     currentEditId = id;
     const btn = document.getElementById('saveActBtn');
@@ -740,75 +662,53 @@
     document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function deleteAct(id) {
-    trackerData.activities = trackerData.activities.filter(a => a.id !== id);
-    saveData();
-  }
+  function deleteAct(id) { trackerData.activities = trackerData.activities.filter(a => a.id !== id); saveData(); }
 
   function render() {
-    const [yyyy, mm, dd] = currentDate.split('-');
-    const dObj = new Date(yyyy, mm - 1, dd);
+    const [yyyy, mm, dd] = currentDate.split('-'); const dObj = new Date(yyyy, mm - 1, dd);
     const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
     const fullDateString = dObj.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     
     const hasData = trackerData.activities.some(a => a.date === currentDate);
-    const dotHtml = hasData ? `<span style="color: #4a90e2; margin-right:4px;">●</span>` : '';
-    document.getElementById('centerDateDisplay').innerHTML = dotHtml + dateString;
-    
-    const logDateText = fullDateString.charAt(0).toUpperCase() + fullDateString.slice(1);
-    document.querySelectorAll('.logDateSubtitle').forEach(el => el.innerText = logDateText);
+    document.getElementById('centerDateDisplay').innerHTML = (hasData ? `<span style="color: var(--primary); margin-right:6px;">●</span>` : '') + dateString;
+    document.querySelectorAll('.logDateSubtitle').forEach(el => el.innerText = fullDateString.charAt(0).toUpperCase() + fullDateString.slice(1));
 
     renderPresetDropdown();
 
     const eToday = trackerData.energyLogs[currentDate] || {};
     ['Ochtend', 'Avond'].forEach(type => {
-      const key = type.toLowerCase();
-      const savedVal = eToday[key];
-      const val = savedVal || 10;
-      
-      document.getElementById('e' + type).value = val;
-      updateMeta(type, val); 
-      
+      const key = type.toLowerCase(); const savedVal = eToday[key]; const val = savedVal || 10;
+      document.getElementById('e' + type).value = val; updateMeta(type, val); 
       if (savedVal !== undefined) {
         const btn = document.getElementById('btnSave' + type);
-        if (btn) {
-          btn.innerText = "✓";
-          btn.style.backgroundColor = "#2ecc71";
-        }
+        if (btn) { btn.innerText = "✓ Opgeslagen"; btn.style.backgroundColor = "var(--success)"; }
       }
     });
 
     const list = document.getElementById('logList');
-    const dayActs = trackerData.activities
-      .filter(a => a.date === currentDate)
-      .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
+    const dayActs = trackerData.activities.filter(a => a.date === currentDate).sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
     if (dayActs.length === 0) {
-      list.innerHTML = `<i>Geen activiteiten ingevoerd op deze dag.</i>`;
+      list.innerHTML = `<i style="color: var(--text-muted); font-size: 14px;">Geen activiteiten vandaag.</i>`;
       document.getElementById('totalMET').innerText = '0';
     } else {
-      let html = '';
-      let total = 0;
+      let html = ''; let total = 0;
       dayActs.forEach(a => {
         total += a.points;
-        let durStr = "";
-        if (a.hours && a.hours > 0) durStr += `${a.hours}u `;
-        if (a.minutes && a.minutes > 0) durStr += `${a.minutes}m`;
-        if (!durStr) durStr = `${a.duration}m`;
-        const timeDisplay = a.time ? `<span style="color:#e67e22; font-weight:bold;">${a.time}</span> - ` : '';
+        let durStr = (a.hours ? `${a.hours}u ` : "") + (a.minutes ? `${a.minutes}m` : (!a.hours ? `${a.duration}m` : ""));
         html += `
           <div class="entry">
             <div>
-              ${timeDisplay}<strong>${a.name}</strong><br>
-              <small>${durStr.trim()} | MET ${a.met}</small>
+              <span style="color:var(--primary); font-weight:700; font-size: 12px; margin-right: 6px;">${a.time || ''}</span>
+              <strong style="font-size: 15px;">${a.name}</strong><br>
+              <small style="color: var(--text-muted);">${durStr.trim()} | MET ${a.met}</small>
             </div>
-            <div style="display: flex; align-items: center;">
-              <span class="badge" style="margin-right: 4px;">${a.points} ptn</span>
-              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:2px 6px; margin-left:4px;" title="Bewerk">✏️</button>
-              <button onclick="deleteAct(${a.id})" class="btn-danger btn-small" style="padding:2px 6px; margin-left:4px;" title="Verwijder">X</button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="badge">${a.points} ptn</span>
+              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 14px; background: transparent; border: 1px solid var(--border);">✏️</button>
+              <button onclick="deleteAct(${a.id})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 14px; background: transparent; border: 1px solid var(--border); color: var(--danger);">X</button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
       list.innerHTML = html;
       document.getElementById('totalMET').innerText = total.toFixed(1);
@@ -817,62 +717,49 @@
   }
 
   function renderChart() {
-    let dates = [];
-    let labels = [];
-    let ochtendData = [];
-    let avondData = [];
-    let metData = [];
+    let dates = []; let labels = []; let ochtendData = []; let avondData = []; let metData = [];
     let baseDate = new Date(chartEndDate);
-
-    const endParts = chartEndDate.split('-');
-    document.getElementById('chartEndDisplay').innerText = endParts[2] + '-' + endParts[1];
+    document.getElementById('chartEndDisplay').innerText = chartEndDate.split('-')[2] + '-' + chartEndDate.split('-')[1];
 
     for (let i = 6; i >= 0; i--) {
-      let d = new Date(baseDate);
-      d.setDate(d.getDate() - i);
-      let dStr = d.toISOString().split('T')[0];
-      dates.push(dStr);
-      
-      const dateParts = dStr.split('-');
-      labels.push(dateParts[2] + '-' + dateParts[1]);
+      let d = new Date(baseDate); d.setDate(d.getDate() - i);
+      let dStr = d.toISOString().split('T')[0]; dates.push(dStr);
+      labels.push(dStr.split('-')[2] + '-' + dStr.split('-')[1]);
 
       const eLog = trackerData.energyLogs[dStr] || {};
       ochtendData.push(eLog.ochtend ? parseFloat(eLog.ochtend) : null);
       avondData.push(eLog.avond ? parseFloat(eLog.avond) : null);
 
-      let totalMET = 0;
-      trackerData.activities.filter(a => a.date === dStr).forEach(a => totalMET += a.points);
+      let totalMET = 0; trackerData.activities.filter(a => a.date === dStr).forEach(a => totalMET += a.points);
       metData.push(totalMET > 0 ? parseFloat(totalMET.toFixed(1)) : 0);
     }
 
     const ctx = document.getElementById('historyChart').getContext('2d');
     if (historyChart) historyChart.destroy();
-
     historyChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          { type: 'line', label: '🌅 Och.', data: ochtendData, borderColor: '#2ecc71', backgroundColor: '#2ecc71', borderWidth: 2, tension: 0.2, yAxisID: 'yEnergy', spanGaps: true },
-          { type: 'line', label: '🌙 Av.', data: avondData, borderColor: '#3498db', backgroundColor: '#3498db', borderWidth: 2, tension: 0.2, yAxisID: 'yEnergy', spanGaps: true },
-          { type: 'bar', label: '⚡ Ptn.', data: metData, backgroundColor: 'rgba(230, 126, 34, 0.4)', borderColor: '#e67e22', borderWidth: 1, yAxisID: 'yMET' }
+          { type: 'line', label: '🌅 Ochtend', data: ochtendData, borderColor: '#34c759', backgroundColor: '#34c759', borderWidth: 3, tension: 0.3, yAxisID: 'yEnergy', spanGaps: true },
+          { type: 'line', label: '🌙 Avond', data: avondData, borderColor: '#007aff', backgroundColor: '#007aff', borderWidth: 3, tension: 0.3, yAxisID: 'yEnergy', spanGaps: true },
+          { type: 'bar', label: '⚡ MET-Ptn', data: metData, backgroundColor: 'rgba(255, 149, 0, 0.25)', borderColor: '#ff9500', borderWidth: 2, borderRadius: 6, yAxisID: 'yMET' }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         scales: {
-          yEnergy: { type: 'linear', position: 'left', min: 1, max: 10, title: { display: true, text: 'Energie (1-10)', font: { size: 10 } }, ticks: { stepSize: 2 } },
-          yMET: { type: 'linear', position: 'right', beginAtZero: true, title: { display: true, text: 'MET-punten', font: { size: 10 } }, grid: { drawOnChartArea: false } }
+          yEnergy: { type: 'linear', position: 'left', min: 1, max: 10, title: { display: true, text: 'Energie (1-10)', font: { size: 11, weight: 'bold' } }, grid: { color: '#f2f2f7' } },
+          yMET: { type: 'linear', position: 'right', beginAtZero: true, title: { display: true, text: 'MET Punten', font: { size: 11, weight: 'bold' } }, grid: { drawOnChartArea: false } }
         },
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12, family: '-apple-system' } } } }
       }
     });
   }
 
   function openDbModal() { renderDbModalList(); document.getElementById('dbModal').style.display = 'flex'; }
   function closeDbModal() {
-    document.getElementById('dbModal').style.display = 'none';
-    currentDbEditIndex = null;
+    document.getElementById('dbModal').style.display = 'none'; currentDbEditIndex = null;
     document.getElementById('newDbName').value = ''; document.getElementById('newDbMet').value = '';
     document.getElementById('dbFormLabel').innerText = "Nieuwe activiteit toevoegen:";
     const btn = document.getElementById('saveDbBtn'); btn.innerText = "+"; btn.style.backgroundColor = "var(--primary)";
@@ -883,15 +770,14 @@
     trackerData.customDb.forEach((item, index) => {
       const div = document.createElement('div'); div.className = 'db-item';
       div.innerHTML = `
-        <div>
+        <div style="display: flex; align-items: center;">
           <button class="star-btn ${item.fav ? 'active' : ''}" onclick="toggleFav(${index})">★</button>
-          <strong>${item.name}</strong> <small style="color:#666;">(MET ${item.met})</small>
+          <div><strong>${item.name}</strong><br><small style="color:var(--text-muted);">MET ${item.met}</small></div>
         </div>
-        <div style="display: flex; gap: 4px;">
-          <button onclick="editDbItem(${index})" class="btn-secondary btn-small" style="padding:2px 6px;">✏️</button>
-          <button onclick="removeDbItem(${index})" class="btn-danger btn-small" style="padding:2px 6px;">X</button>
-        </div>
-      `;
+        <div style="display: flex; gap: 6px;">
+          <button onclick="editDbItem(${index})" class="btn-secondary btn-small" style="padding:6px;">✏️</button>
+          <button onclick="removeDbItem(${index})" class="btn-secondary btn-small" style="padding:6px; color: var(--danger);">X</button>
+        </div>`;
       container.appendChild(div);
     });
   }
@@ -899,51 +785,42 @@
   function editDbItem(index) {
     const item = trackerData.customDb[index];
     document.getElementById('newDbName').value = item.name; document.getElementById('newDbMet').value = item.met;
-    currentDbEditIndex = index;
-    document.getElementById('dbFormLabel').innerText = "Activiteit bewerken:";
+    currentDbEditIndex = index; document.getElementById('dbFormLabel').innerText = "Activiteit bewerken:";
     const btn = document.getElementById('saveDbBtn'); btn.innerText = "✓"; btn.style.backgroundColor = "var(--edit-color)";
   }
   function removeDbItem(index) {
-    if (confirm(`Verwijder "${trackerData.customDb[index].name}" uit de lijst?`)) {
-      trackerData.customDb.splice(index, 1); saveData(); renderDbModalList();
-    }
+    if (confirm(`Verwijder "${trackerData.customDb[index].name}"?`)) { trackerData.customDb.splice(index, 1); saveData(); renderDbModalList(); }
   }
   function addOrUpdateDbItem() {
     const name = document.getElementById('newDbName').value.trim(); const met = parseFloat(document.getElementById('newDbMet').value);
-    if (!name || isNaN(met)) { alert('Vul een naam en een geldige MET-score in.'); return; }
+    if (!name || isNaN(met)) { alert('Vul een naam en MET in.'); return; }
     if (currentDbEditIndex !== null) {
       trackerData.customDb[currentDbEditIndex].name = name; trackerData.customDb[currentDbEditIndex].met = met;
-      currentDbEditIndex = null;
-      document.getElementById('dbFormLabel').innerText = "Nieuwe activiteit toevoegen:";
+      currentDbEditIndex = null; document.getElementById('dbFormLabel').innerText = "Nieuwe activiteit toevoegen:";
       const btn = document.getElementById('saveDbBtn'); btn.innerText = "+"; btn.style.backgroundColor = "var(--primary)";
-    } else {
-      trackerData.customDb.push({ name: name, met: met, fav: true });
-    }
+    } else { trackerData.customDb.push({ name, met, fav: true }); }
     document.getElementById('newDbName').value = ''; document.getElementById('newDbMet').value = '';
     saveData(); renderDbModalList();
   }
 
   function openCopyModal() {
     const container = document.getElementById('copyListContainer'); container.innerHTML = '';
-    const datesWithActivities = [...new Set(trackerData.activities.map(a => a.date))];
-    const availableDates = datesWithActivities.filter(d => d !== currentDate).sort((a, b) => b.localeCompare(a));
+    const availableDates = [...new Set(trackerData.activities.map(a => a.date))].filter(d => d !== currentDate).sort((a, b) => b.localeCompare(a));
     if (availableDates.length === 0) {
-      container.innerHTML = '<p style="font-size:13px; color:#666;">Je hebt nog geen eerdere dagen met activiteiten.</p>';
+      container.innerHTML = '<p style="font-size:14px; text-align:center;">Geen eerdere dagen gevonden.</p>';
     } else {
       availableDates.forEach(dStr => {
         const acts = trackerData.activities.filter(a => a.date === dStr);
         const points = acts.reduce((sum, a) => sum + a.points, 0).toFixed(1);
-        const [yyyy, mm, dd] = dStr.split('-'); const dObj = new Date(yyyy, mm - 1, dd);
-        const dateString = dObj.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+        const dateString = new Date(dStr).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
         const div = document.createElement('div'); div.className = 'db-item'; div.style.cursor = 'pointer';
         div.onclick = () => copyActivities(dStr);
         div.innerHTML = `
           <div>
-            <span style="color: #4a90e2; font-size: 11px; margin-right: 6px;">●</span>
             <strong>${dateString}</strong> <br>
-            <small style="color:#666; margin-left:18px;">(${acts.length} act. / ${points} ptn)</small>
+            <small style="color:var(--text-muted);">${acts.length} activiteiten / ${points} ptn</small>
           </div>
-          <button class="btn-primary btn-small" style="padding:4px 8px; background-color: var(--primary); border:none; color:white; border-radius:4px;">Kopieer</button>
+          <button class="btn-secondary btn-small" style="color: var(--primary); font-weight:bold;">Kopieer</button>
         `;
         container.appendChild(div);
       });
@@ -954,21 +831,17 @@
   function copyActivities(sourceDate) {
     const actsToCopy = trackerData.activities.filter(a => a.date === sourceDate);
     actsToCopy.forEach((act, index) => trackerData.activities.push({ ...act, id: Date.now() + index, date: currentDate }));
-    saveData(); closeCopyModal(); alert(`Activiteiten succesvol gekopieerd naar vandaag!`);
+    saveData(); closeCopyModal(); alert(`Gekopieerd naar vandaag!`);
   }
 
   function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerData, null, 2));
-    const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `met_tracker_backup_${currentDate}.json`);
-    document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
+    const a = document.createElement('a'); a.href = dataStr; a.download = `met_tracker_${currentDate}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
   }
-  
   function clearAllData() {
-    if (confirm("Weet je zeker dat je alle cloud- en lokale gegevens wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
-      trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
-      saveData();
-      alert("Alle gegevens zijn permanent gewist.");
+    if (confirm("Weet je zeker dat je ALLES wilt wissen?")) {
+      trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets }; saveData(); alert("Gewist.");
     }
   }
 </script>
