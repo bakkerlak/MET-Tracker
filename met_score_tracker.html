@@ -166,15 +166,15 @@
     .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
     #actName { text-align: left; padding-left: 12px; }
 
-    /* Nóg compacter Logboek */
+    /* Compacter Logboek & Lijsten (Herbruikbaar) */
     .logbook-wrapper {
       background: #f2f2f7; 
       border-radius: 12px;
-      overflow: hidden;
+      overflow-y: auto;
       border: 1px solid var(--border);
     }
 
-    .entry {
+    .entry, .db-item {
       background: transparent; 
       border-bottom: 1px solid var(--border); 
       padding: 6px 12px; 
@@ -182,7 +182,7 @@
       align-items: center; font-size: 14px;
     }
     
-    .entry:last-child {
+    .entry:last-child, .db-item:last-child {
       border-bottom: none;
     }
 
@@ -190,6 +190,7 @@
     
     .chart-container { position: relative; height: 260px; width: 100%; margin-top: 10px; }
 
+    /* Modals */
     .modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center;
@@ -197,11 +198,9 @@
     }
     .modal-content {
       background: #fff; padding: 24px; border-radius: 24px; width: 90%; max-width: 400px;
-      max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
-    .db-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-    .db-item:last-child { border-bottom: none; }
-    .star-btn { background: none; border: none; font-size: 20px; box-shadow: none; padding: 0 8px; color: #d1d1d6; }
+    .star-btn { background: none; border: none; font-size: 18px; box-shadow: none; padding: 0 10px 0 0; color: #d1d1d6; }
     .star-btn.active { color: #ffcc00; }
     
     .google-btn {
@@ -376,8 +375,11 @@
         <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small" style="padding: 0 16px; height: 44px;">+</button>
       </div>
     </div>
-    <div id="dbListContainer" style="max-height: 40vh; overflow-y: auto; padding-right: 4px;"></div>
-    <button onclick="closeDbModal()" class="btn-secondary" style="width: 100%; margin-top: 16px;">Sluiten</button>
+    
+    <!-- Compacte Lijst Wrapper (Zelfde als logboek) -->
+    <div id="dbListContainer" class="logbook-wrapper" style="max-height: 40vh; margin-bottom: 16px;"></div>
+    
+    <button onclick="closeDbModal()" class="btn-secondary" style="width: 100%; margin-top: auto;">Sluiten</button>
   </div>
 </div>
 
@@ -385,8 +387,11 @@
   <div class="modal-content">
     <h3 style="text-align: center;">Kopieer Activiteiten</h3>
     <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Kies een eerdere dag om naar vandaag te kopiëren.</p>
-    <div id="copyListContainer" style="max-height: 50vh; overflow-y: auto;"></div>
-    <button onclick="closeCopyModal()" class="btn-secondary" style="width: 100%; margin-top: 16px;">Annuleren</button>
+    
+    <!-- Compacte Lijst Wrapper (Zelfde als logboek) -->
+    <div id="copyListContainer" class="logbook-wrapper" style="max-height: 50vh; margin-bottom: 16px;"></div>
+    
+    <button onclick="closeCopyModal()" class="btn-secondary" style="width: 100%; margin-top: auto;">Annuleren</button>
   </div>
 </div>
 
@@ -407,7 +412,6 @@
   
   let currentUser = null;
 
-  // NIEUWE, UITGEBREIDE LIJST MET ACTIVITEITEN
   const defaultPresets = [
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
@@ -479,7 +483,6 @@
           trackerData = doc.data();
           if (!trackerData.customDb) trackerData.customDb = [];
           
-          // Voeg eventueel ontbrekende nieuwe standaard presets toe aan bestaande lijst
           defaultPresets.forEach(preset => {
             if (!trackerData.customDb.some(dbItem => dbItem.name === preset.name)) {
               trackerData.customDb.push(preset);
@@ -529,7 +532,6 @@
     metaDiv.style.color = meta.color;
     card.style.borderLeftColor = meta.color;
 
-    // Laat de opslaan-knop weer verschijnen bij verandering
     const btn = document.getElementById('btnSave' + type);
     if (btn) {
       btn.style.display = 'block';
@@ -548,7 +550,6 @@
       btn = document.getElementById('btnSaveAvond');
     }
     saveData();
-    // Verberg de knop als deze is opgeslagen, zonder extra tekst
     if (btn) {
       btn.style.display = 'none';
     }
@@ -655,7 +656,6 @@
       updateMeta(type, val); 
       
       const btn = document.getElementById('btnSave' + type);
-      // Controleer of de waarde al was opgeslagen; zo ja, verberg de knop volledig
       if (savedVal !== undefined && btn) {
         btn.style.display = 'none';
       }
@@ -761,11 +761,11 @@
       div.innerHTML = `
         <div style="display: flex; align-items: center;">
           <button class="star-btn ${item.fav ? 'active' : ''}" onclick="toggleFav(${index})">★</button>
-          <div><strong>${item.name}</strong><br><small style="color:var(--text-muted);">MET ${item.met}</small></div>
+          <div><strong style="font-size: 14px;">${item.name}</strong><br><small style="color:var(--text-muted);">MET ${item.met}</small></div>
         </div>
         <div style="display: flex; gap: 6px;">
-          <button onclick="editDbItem(${index})" class="btn-secondary btn-small" style="padding:6px;">✏️</button>
-          <button onclick="removeDbItem(${index})" class="btn-secondary btn-small" style="padding:6px; color: var(--danger);">X</button>
+          <button onclick="editDbItem(${index})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 13px; background: transparent; border: 1px solid #d1d1d6;">✏️</button>
+          <button onclick="removeDbItem(${index})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 13px; background: transparent; border: 1px solid #d1d1d6; color: var(--danger);">X</button>
         </div>`;
       container.appendChild(div);
     });
@@ -796,7 +796,7 @@
     const container = document.getElementById('copyListContainer'); container.innerHTML = '';
     const availableDates = [...new Set(trackerData.activities.map(a => a.date))].filter(d => d !== currentDate).sort((a, b) => b.localeCompare(a));
     if (availableDates.length === 0) {
-      container.innerHTML = '<p style="font-size:14px; text-align:center;">Geen eerdere dagen gevonden.</p>';
+      container.innerHTML = '<div style="padding: 16px; color: var(--text-muted); font-size: 14px; text-align: center;">Geen eerdere dagen gevonden.</div>';
     } else {
       availableDates.forEach(dStr => {
         const acts = trackerData.activities.filter(a => a.date === dStr);
@@ -806,10 +806,10 @@
         div.onclick = () => copyActivities(dStr);
         div.innerHTML = `
           <div>
-            <strong>${dateString}</strong> <br>
+            <strong style="font-size: 14px;">${dateString}</strong> <br>
             <small style="color:var(--text-muted);">${acts.length} activiteiten / ${points} ptn</small>
           </div>
-          <button class="btn-secondary btn-small" style="color: var(--primary); font-weight:bold;">Kopieer</button>
+          <button class="btn-secondary btn-small" style="padding:4px 8px; font-size: 13px; background: transparent; border: 1px solid #d1d1d6; color: var(--primary); font-weight:bold;">Kopieer</button>
         `;
         container.appendChild(div);
       });
