@@ -61,7 +61,7 @@
 
     label { display: block; font-weight: 500; font-size: 13px; color: var(--text-muted); }
 
-    /* Perfect uitgelijnde invoervelden */
+    /* Invoervelden */
     input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
       width: 100%;
       height: 44px;
@@ -116,7 +116,7 @@
       background: #fafafa;
       border: 1px solid var(--border);
       border-radius: 12px;
-      overflow: hidden; /* Houdt de hoeken strak */
+      overflow: hidden; 
       margin-bottom: 12px;
     }
     
@@ -157,9 +157,14 @@
       cursor: pointer;
     }
 
-    /* Grid Layouts voor strakke velden */
-    .input-row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
-    .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+    /* ÉÉN enkel grid voor perfecte verticale uitlijning */
+    .form-grid { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr 1fr; 
+      gap: 12px; 
+      margin-top: 12px; 
+      margin-bottom: 12px; 
+    }
     .compact-field { display: flex; flex-direction: column; width: 100%; }
     .compact-field label { font-size: 12px; margin-bottom: 6px; white-space: nowrap; }
     .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
@@ -235,7 +240,7 @@
       </div>
     </div>
 
-    <!-- Energieniveau Scores (Samen in één blok) -->
+    <!-- Energieniveau Scores -->
     <div class="card">
       <h3>Energieniveau</h3>
       
@@ -264,7 +269,7 @@
       </div>
     </div>
 
-    <!-- MET Invoer (Strak uitgelijnd grid) -->
+    <!-- MET Invoer (Nu 100% uitgelijnd dankzij single grid) -->
     <div class="card" id="inputCard">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">Activiteit Toevoegen</h3>
@@ -273,33 +278,30 @@
       
       <select id="presetSelect" onchange="selectPreset()"></select>
       
-      <div class="input-row-2">
-        <div class="compact-field">
+      <div class="form-grid">
+        <div class="compact-field" style="grid-column: span 2;">
           <label>Activiteit Naam</label>
           <input type="text" id="actName" placeholder="Bijv. Wandelen">
         </div>
-        <div class="compact-field">
+        <div class="compact-field" style="grid-column: span 1;">
           <label>MET-score</label>
           <input type="number" id="metVal" step="0.1" placeholder="2.5">
         </div>
-      </div>
-      
-      <div class="input-row-3">
-        <div class="compact-field">
+        <div class="compact-field" style="grid-column: span 1;">
           <label>Starttijd</label>
           <input type="time" id="startTime">
         </div>
-        <div class="compact-field">
+        <div class="compact-field" style="grid-column: span 1;">
           <label>Uren</label>
           <input type="number" id="durHours" min="0" max="24" placeholder="0u">
         </div>
-        <div class="compact-field">
+        <div class="compact-field" style="grid-column: span 1;">
           <label>Minuten</label>
           <input type="number" id="durMins" min="0" max="59" placeholder="30m">
         </div>
       </div>
       
-      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%; margin-top: 12px;">Activiteit Opslaan</button>
+      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%;">Activiteit Opslaan</button>
     </div>
 
     <!-- Logboek -->
@@ -320,7 +322,7 @@
       </div>
     </div>
 
-    <!-- Grafiek Afgelopen 7 Dagen (Mockup Style) -->
+    <!-- Grafiek Afgelopen 7 Dagen -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
         <h3 style="margin: 0;">Weekoverzicht</h3>
@@ -633,7 +635,6 @@
       list.innerHTML = html;
       document.getElementById('totalMET').innerText = total.toFixed(1);
     }
-    // Geef canvas tijd om te renderen voordat we het gradient maken
     setTimeout(renderChart, 10);
   }
 
@@ -658,11 +659,10 @@
     const canvas = document.getElementById('historyChart');
     const ctx = canvas.getContext('2d');
     
-    // Mooie gradient voor de MET-staven
     let barGradient = ctx.createLinearGradient(0, 0, 0, 260);
-    barGradient.addColorStop(0, 'rgba(52, 199, 89, 0.85)');   // Groen (top)
-    barGradient.addColorStop(0.5, 'rgba(255, 204, 0, 0.85)'); // Geel (midden)
-    barGradient.addColorStop(1, 'rgba(255, 59, 48, 0.85)');   // Rood (bodem)
+    barGradient.addColorStop(0, 'rgba(52, 199, 89, 0.85)');
+    barGradient.addColorStop(0.5, 'rgba(255, 204, 0, 0.85)');
+    barGradient.addColorStop(1, 'rgba(255, 59, 48, 0.85)');
 
     if (historyChart) historyChart.destroy();
     
@@ -679,22 +679,9 @@
       options: {
         responsive: true, maintainAspectRatio: false,
         scales: {
-          x: { 
-            grid: { display: false, drawBorder: false }, // Geen verticale lijnen
-            ticks: { font: { size: 11, family: '-apple-system' } }
-          },
-          yEnergy: { 
-            type: 'linear', position: 'left', min: 1, max: 10, 
-            title: { display: true, text: 'Energie (1-10)', font: { size: 11, weight: 'bold' } }, 
-            grid: { color: 'rgba(0,0,0,0.04)', borderDash: [5, 5] }, // Zeer lichte gestippelde lijn
-            border: { display: false }
-          },
-          yMET: { 
-            type: 'linear', position: 'right', beginAtZero: true, 
-            title: { display: true, text: 'MET Punten', font: { size: 11, weight: 'bold' } }, 
-            grid: { display: false }, // Geen lijnen achter de staafjes
-            border: { display: false }
-          }
+          x: { grid: { display: false, drawBorder: false }, ticks: { font: { size: 11, family: '-apple-system' } } },
+          yEnergy: { type: 'linear', position: 'left', min: 1, max: 10, title: { display: true, text: 'Energie (1-10)', font: { size: 11, weight: 'bold' } }, grid: { color: 'rgba(0,0,0,0.04)', borderDash: [5, 5] }, border: { display: false } },
+          yMET: { type: 'linear', position: 'right', beginAtZero: true, title: { display: true, text: 'MET Punten', font: { size: 11, weight: 'bold' } }, grid: { display: false }, border: { display: false } }
         },
         plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12, family: '-apple-system' } } } }
       }
