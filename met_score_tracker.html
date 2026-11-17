@@ -19,16 +19,18 @@
 
   <style>
     :root {
-      --bg-color: #f2f2f7;
+      /* Donkerdere grijze achtergrond */
+      --bg-color: #dcdce0;
       --card-bg: #ffffff;
       --primary: #007aff;
+      --primary-hover: #005bb5;
       --text-main: #1c1c1e;
       --text-muted: #8e8e93;
       --border: #e5e5ea;
       --danger: #ff3b30;
       --success: #34c759;
       --edit-color: #ff9500;
-      --shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
     }
 
     body {
@@ -103,7 +105,7 @@
     .date-nav button { width: 44px; height: 44px; padding: 0; font-size: 16px; border-radius: 12px; background-color: #e5e5ea; color: var(--text-main); box-shadow: none; }
     
     .date-picker-wrapper {
-      position: relative; flex-grow: 1; height: 44px; background-color: var(--bg-color);
+      position: relative; flex-grow: 1; height: 44px; background-color: #f2f2f7;
       border-radius: 12px; display: flex; align-items: center; justify-content: center;
       font-size: 15px; font-weight: 600; color: var(--primary); text-align: center;
     }
@@ -131,7 +133,7 @@
 
     .energy-row-1 { display: flex; align-items: center; gap: 12px; }
     .energy-label { font-weight: 600; font-size: 14px; color: var(--text-main); min-width: 75px; }
-    .energy-row-2 { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+    .energy-row-2 { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; height: 26px; }
     .energy-meta { font-weight: 600; font-size: 13px; }
 
     /* Sliders */
@@ -155,20 +157,18 @@
       cursor: pointer;
     }
 
-    /* Strak Grid Invoervelden */
-    /* Zorgt ervoor dat de breedtes exact matchen: 2 kolommen voor de naam = 2 losse kolommen voor uren/minuten */
+    /* Strak Grid Invoervelden (3 gelijke vakken onder) */
     .form-grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
-    .form-grid-bottom { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
-    .time-dur-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } /* Uren en Minuten splitsen in het 2e deel */
+    .form-grid-bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
     
     .compact-field { display: flex; flex-direction: column; width: 100%; }
     .compact-field label { font-size: 12px; margin-bottom: 6px; white-space: nowrap; }
     .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
     #actName { text-align: left; padding-left: 12px; }
 
-    /* Compact & Lichtgrijs Logboek */
+    /* Nóg compacter Logboek */
     .logbook-wrapper {
-      background: var(--bg-color); /* Lichtgrijze achtergrond */
+      background: #f2f2f7; 
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border);
@@ -177,7 +177,7 @@
     .entry {
       background: transparent; 
       border-bottom: 1px solid var(--border); 
-      padding: 12px; 
+      padding: 6px 12px; /* Kleinere tussenruimte */
       display: flex; justify-content: space-between;
       align-items: center; font-size: 14px;
     }
@@ -280,7 +280,7 @@
       </div>
     </div>
 
-    <!-- MET Invoer (Grid Update) -->
+    <!-- MET Invoer (Onderste rij = 3 gelijke vakken) -->
     <div class="card" id="inputCard">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">Activiteit Toevoegen</h3>
@@ -305,15 +305,13 @@
           <label>Starttijd</label>
           <input type="time" id="startTime">
         </div>
-        <div class="time-dur-wrapper">
-          <div class="compact-field">
-            <label>Uren</label>
-            <input type="number" id="durHours" min="0" max="24" placeholder="0u">
-          </div>
-          <div class="compact-field">
-            <label>Minuten</label>
-            <input type="number" id="durMins" min="0" max="59" placeholder="30m">
-          </div>
+        <div class="compact-field">
+          <label>Uren</label>
+          <input type="number" id="durHours" min="0" max="24" placeholder="0u">
+        </div>
+        <div class="compact-field">
+          <label>Minuten</label>
+          <input type="number" id="durMins" min="0" max="59" placeholder="30m">
         </div>
       </div>
       
@@ -495,11 +493,11 @@
     metaDiv.style.color = meta.color;
     card.style.borderLeftColor = meta.color;
 
+    // Laat de opslaan-knop weer verschijnen bij verandering
     const btn = document.getElementById('btnSave' + type);
-    if (btn && btn.innerText !== "Opslaan") {
+    if (btn) {
+      btn.style.display = 'block';
       btn.innerText = "Opslaan";
-      btn.style.backgroundColor = "var(--primary)";
-      btn.style.color = "white";
     }
   }
 
@@ -514,9 +512,9 @@
       btn = document.getElementById('btnSaveAvond');
     }
     saveData();
+    // Verberg de knop als deze is opgeslagen
     if (btn) {
-      btn.innerText = "✓ Opgeslagen";
-      btn.style.backgroundColor = "var(--success)";
+      btn.style.display = 'none';
     }
   }
 
@@ -617,10 +615,13 @@
     const eToday = trackerData.energyLogs[currentDate] || {};
     ['Ochtend', 'Avond'].forEach(type => {
       const key = type.toLowerCase(); const savedVal = eToday[key]; const val = savedVal || 10;
-      document.getElementById('e' + type).value = val; updateMeta(type, val); 
-      if (savedVal !== undefined) {
-        const btn = document.getElementById('btnSave' + type);
-        if (btn) { btn.innerText = "✓ Opgeslagen"; btn.style.backgroundColor = "var(--success)"; }
+      document.getElementById('e' + type).value = val; 
+      updateMeta(type, val); 
+      
+      const btn = document.getElementById('btnSave' + type);
+      // Controleer of de waarde al was opgeslagen; zo ja, verberg de knop
+      if (savedVal !== undefined && btn) {
+        btn.style.display = 'none';
       }
     });
 
@@ -634,7 +635,7 @@
       document.getElementById('totalMET').innerText = '0';
     } else {
       list.style.border = "1px solid var(--border)";
-      list.style.background = "var(--bg-color)";
+      list.style.background = "#f2f2f7";
       let html = ''; let total = 0;
       dayActs.forEach(a => {
         total += a.points;
@@ -643,13 +644,13 @@
           <div class="entry">
             <div>
               <span style="color:var(--primary); font-weight:700; font-size: 12px; margin-right: 6px;">${a.time || ''}</span>
-              <strong style="font-size: 15px;">${a.name}</strong><br>
+              <strong style="font-size: 14px;">${a.name}</strong><br>
               <small style="color: var(--text-muted);">${durStr.trim()} | MET ${a.met}</small>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="badge">${a.points} ptn</span>
-              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 14px; background: transparent; border: 1px solid var(--border);">✏️</button>
-              <button onclick="deleteAct(${a.id})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 14px; background: transparent; border: 1px solid var(--border); color: var(--danger);">X</button>
+              <button onclick="editAct(${a.id})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 13px; background: transparent; border: 1px solid #d1d1d6;">✏️</button>
+              <button onclick="deleteAct(${a.id})" class="btn-secondary btn-small" style="padding:4px 8px; font-size: 13px; background: transparent; border: 1px solid #d1d1d6; color: var(--danger);">X</button>
             </div>
           </div>`;
       });
