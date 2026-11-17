@@ -61,10 +61,10 @@
 
     label { display: block; font-weight: 500; font-size: 13px; color: var(--text-muted); }
 
-    /* Strakkere en uitgelijnde invoervelden */
+    /* Perfect uitgelijnde invoervelden */
     input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
       width: 100%;
-      height: 44px; /* Vaste hoogte voor perfecte uitlijning */
+      height: 44px;
       padding: 0 12px;
       margin: 0;
       border: 1px solid var(--border);
@@ -111,16 +111,26 @@
     }
     .date-picker-wrapper input[type="date"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; padding: 0; }
 
-    /* Nieuwe lay-out Energie Kaarten */
-    .energy-card {
+    /* Gecombineerd blok voor de energie sliders */
+    .energy-wrapper {
       background: #fafafa;
       border: 1px solid var(--border);
-      border-left: 6px solid var(--success);
-      margin-bottom: 12px;
-      padding: 14px;
       border-radius: 12px;
-      transition: border-color 0.3s;
+      overflow: hidden; /* Houdt de hoeken strak */
+      margin-bottom: 12px;
     }
+    
+    .energy-card {
+      border-left: 6px solid var(--success);
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      transition: border-left-color 0.3s;
+    }
+    
+    .energy-card:last-child {
+      border-bottom: none;
+    }
+
     .energy-row-1 { display: flex; align-items: center; gap: 12px; }
     .energy-label { font-weight: 600; font-size: 14px; color: var(--text-main); min-width: 75px; }
     .energy-row-2 { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
@@ -148,13 +158,12 @@
     }
 
     /* Grid Layouts voor strakke velden */
-    .flex-gap { display: flex; gap: 12px; align-items: center; }
-    .input-row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .compact-field { display: flex; flex-direction: column; }
+    .input-row-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
+    .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .compact-field { display: flex; flex-direction: column; width: 100%; }
     .compact-field label { font-size: 12px; margin-bottom: 6px; white-space: nowrap; }
     .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
-    #actName { text-align: left; padding-left: 12px; } /* Activiteit naam links uitgelijnd */
+    #actName { text-align: left; padding-left: 12px; }
 
     .entry {
       background: #fafafa; border: 1px solid var(--border); border-radius: 12px;
@@ -162,6 +171,7 @@
       align-items: center; font-size: 14px;
     }
     .badge { background: #e1f0ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+    
     .chart-container { position: relative; height: 260px; width: 100%; margin-top: 10px; }
 
     .modal {
@@ -225,42 +235,43 @@
       </div>
     </div>
 
-    <!-- Energieniveau Scores (Nieuwe Layout) -->
+    <!-- Energieniveau Scores (Samen in één blok) -->
     <div class="card">
       <h3>Energieniveau</h3>
-      <div class="energy-card" id="cardOchtend">
-        <div class="energy-row-1">
-          <div class="energy-label">🌅 Ochtend</div>
-          <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
-        </div>
-        <div class="energy-row-2">
-          <div class="energy-meta" id="metaOchtend">🟢 10 - Fit / Volledige energie</div>
-          <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="min-width: 80px;">Opslaan</button>
-        </div>
-      </div>
       
-      <div class="energy-card" id="cardAvond">
-        <div class="energy-row-1">
-          <div class="energy-label">🌙 Avond</div>
-          <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
+      <div class="energy-wrapper">
+        <div class="energy-card" id="cardOchtend">
+          <div class="energy-row-1">
+            <div class="energy-label">🌅 Ochtend</div>
+            <input type="range" id="eOchtend" min="1" max="10" value="10" oninput="updateMeta('Ochtend', this.value)">
+          </div>
+          <div class="energy-row-2">
+            <div class="energy-meta" id="metaOchtend">🟢 10 - Fit / Volledige energie</div>
+            <button id="btnSaveOchtend" onclick="saveEnergy('ochtend')" class="btn-small" style="min-width: 80px;">Opslaan</button>
+          </div>
         </div>
-        <div class="energy-row-2">
-          <div class="energy-meta" id="metaAvond">🟢 10 - Fit / Volledige energie</div>
-          <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="min-width: 80px;">Opslaan</button>
+        
+        <div class="energy-card" id="cardAvond">
+          <div class="energy-row-1">
+            <div class="energy-label">🌙 Avond</div>
+            <input type="range" id="eAvond" min="1" max="10" value="10" oninput="updateMeta('Avond', this.value)">
+          </div>
+          <div class="energy-row-2">
+            <div class="energy-meta" id="metaAvond">🟢 10 - Fit / Volledige energie</div>
+            <button id="btnSaveAvond" onclick="saveEnergy('avond')" class="btn-small" style="min-width: 80px;">Opslaan</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- MET Invoer (Strak uitgelijnd) -->
+    <!-- MET Invoer (Strak uitgelijnd grid) -->
     <div class="card" id="inputCard">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">Activiteit Toevoegen</h3>
         <button onclick="openDbModal()" class="btn-secondary btn-small" style="font-size: 12px;">⚙️ Lijst</button>
       </div>
       
-      <div style="margin-bottom: 12px;">
-        <select id="presetSelect" onchange="selectPreset()"></select>
-      </div>
+      <select id="presetSelect" onchange="selectPreset()"></select>
       
       <div class="input-row-2">
         <div class="compact-field">
@@ -288,7 +299,7 @@
         </div>
       </div>
       
-      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%; margin-top: 8px;">Activiteit Opslaan</button>
+      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%; margin-top: 12px;">Activiteit Opslaan</button>
     </div>
 
     <!-- Logboek -->
@@ -309,7 +320,7 @@
       </div>
     </div>
 
-    <!-- Grafiek Afgelopen 7 Dagen -->
+    <!-- Grafiek Afgelopen 7 Dagen (Mockup Style) -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
         <h3 style="margin: 0;">Weekoverzicht</h3>
@@ -325,9 +336,9 @@
     </div>
 
     <!-- Instellingen -->
-    <div class="card">
+    <div class="card" style="margin-bottom: 30px;">
       <h3>Instellingen & Data</h3>
-      <div class="flex-gap" style="margin-bottom: 10px;">
+      <div style="display: flex; gap: 12px; margin-bottom: 12px;">
         <button onclick="exportData()" class="btn-secondary btn-small" style="flex:1; padding: 10px;">Exporteer Data</button>
       </div>
       <button onclick="clearAllData()" class="btn-danger btn-small" style="width:100%; padding: 10px;">Wis Alle Gegevens</button>
@@ -342,7 +353,7 @@
     <h3 style="text-align: center; margin-bottom: 16px;">Favorieten & Lijst</h3>
     <div style="background: var(--bg-color); padding: 16px; border-radius: 16px; margin-bottom: 16px;">
       <label id="dbFormLabel" style="font-weight: 600; color: var(--text-main);">Nieuwe activiteit toevoegen:</label>
-      <div class="flex-gap" style="margin-top: 8px;">
+      <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
         <input type="text" id="newDbName" placeholder="Naam" style="margin:0; flex: 2;">
         <input type="number" id="newDbMet" step="0.1" placeholder="MET" style="margin:0; flex: 1;">
         <button id="saveDbBtn" onclick="addOrUpdateDbItem()" class="btn-small" style="padding: 0 16px; height: 44px;">+</button>
@@ -391,7 +402,9 @@
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   let chartEndDate = new Date().toISOString().split('T')[0];
-  document.getElementById('startTime').value = new Date().toTimeString().slice(0, 5);
+  
+  const now = new Date();
+  document.getElementById('startTime').value = now.toTimeString().slice(0, 5);
 
   let historyChart = null;
   let currentEditId = null;
@@ -620,7 +633,8 @@
       list.innerHTML = html;
       document.getElementById('totalMET').innerText = total.toFixed(1);
     }
-    renderChart();
+    // Geef canvas tijd om te renderen voordat we het gradient maken
+    setTimeout(renderChart, 10);
   }
 
   function renderChart() {
@@ -641,23 +655,46 @@
       metData.push(totalMET > 0 ? parseFloat(totalMET.toFixed(1)) : 0);
     }
 
-    const ctx = document.getElementById('historyChart').getContext('2d');
+    const canvas = document.getElementById('historyChart');
+    const ctx = canvas.getContext('2d');
+    
+    // Mooie gradient voor de MET-staven
+    let barGradient = ctx.createLinearGradient(0, 0, 0, 260);
+    barGradient.addColorStop(0, 'rgba(52, 199, 89, 0.85)');   // Groen (top)
+    barGradient.addColorStop(0.5, 'rgba(255, 204, 0, 0.85)'); // Geel (midden)
+    barGradient.addColorStop(1, 'rgba(255, 59, 48, 0.85)');   // Rood (bodem)
+
     if (historyChart) historyChart.destroy();
+    
     historyChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          { type: 'line', label: '🌅 Ochtend', data: ochtendData, borderColor: '#34c759', backgroundColor: '#34c759', borderWidth: 3, tension: 0.3, yAxisID: 'yEnergy', spanGaps: true },
-          { type: 'line', label: '🌙 Avond', data: avondData, borderColor: '#007aff', backgroundColor: '#007aff', borderWidth: 3, tension: 0.3, yAxisID: 'yEnergy', spanGaps: true },
-          { type: 'bar', label: '⚡ MET-Ptn', data: metData, backgroundColor: 'rgba(255, 149, 0, 0.25)', borderColor: '#ff9500', borderWidth: 2, borderRadius: 6, yAxisID: 'yMET' }
+          { type: 'line', label: '🌅 Ochtend', data: ochtendData, borderColor: '#34c759', backgroundColor: '#ffffff', borderWidth: 3, tension: 0.4, yAxisID: 'yEnergy', spanGaps: true, pointRadius: 4, pointBorderWidth: 2 },
+          { type: 'line', label: '🌙 Avond', data: avondData, borderColor: '#007aff', backgroundColor: '#ffffff', borderWidth: 3, tension: 0.4, yAxisID: 'yEnergy', spanGaps: true, pointRadius: 4, pointBorderWidth: 2 },
+          { type: 'bar', label: '⚡ MET-Ptn', data: metData, backgroundColor: barGradient, borderRadius: 8, borderSkipped: false, barPercentage: 0.6, yAxisID: 'yMET' }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         scales: {
-          yEnergy: { type: 'linear', position: 'left', min: 1, max: 10, title: { display: true, text: 'Energie (1-10)', font: { size: 11, weight: 'bold' } }, grid: { color: '#f2f2f7' } },
-          yMET: { type: 'linear', position: 'right', beginAtZero: true, title: { display: true, text: 'MET Punten', font: { size: 11, weight: 'bold' } }, grid: { drawOnChartArea: false } }
+          x: { 
+            grid: { display: false, drawBorder: false }, // Geen verticale lijnen
+            ticks: { font: { size: 11, family: '-apple-system' } }
+          },
+          yEnergy: { 
+            type: 'linear', position: 'left', min: 1, max: 10, 
+            title: { display: true, text: 'Energie (1-10)', font: { size: 11, weight: 'bold' } }, 
+            grid: { color: 'rgba(0,0,0,0.04)', borderDash: [5, 5] }, // Zeer lichte gestippelde lijn
+            border: { display: false }
+          },
+          yMET: { 
+            type: 'linear', position: 'right', beginAtZero: true, 
+            title: { display: true, text: 'MET Punten', font: { size: 11, weight: 'bold' } }, 
+            grid: { display: false }, // Geen lijnen achter de staafjes
+            border: { display: false }
+          }
         },
         plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12, family: '-apple-system' } } } }
       }
