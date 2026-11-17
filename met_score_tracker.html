@@ -157,13 +157,13 @@
       cursor: pointer;
     }
 
-    /* Strak Grid Invoervelden (3 gelijke vakken onder) */
+    /* FORCED EQUAL WIDTH GRID: Negeert iPhone's minimum breedte per veld */
     .form-grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
-    .form-grid-bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .form-grid-bottom { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
     
     .compact-field { display: flex; flex-direction: column; width: 100%; }
     .compact-field label { font-size: 12px; margin-bottom: 6px; white-space: nowrap; }
-    .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
+    .compact-field input { padding-left: 4px; padding-right: 4px; text-align: center; }
     #actName { text-align: left; padding-left: 12px; }
 
     /* Compacter Logboek & Lijsten (Herbruikbaar) */
