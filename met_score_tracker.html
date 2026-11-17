@@ -177,7 +177,7 @@
     .entry {
       background: transparent; 
       border-bottom: 1px solid var(--border); 
-      padding: 6px 12px; /* Kleinere tussenruimte */
+      padding: 6px 12px; 
       display: flex; justify-content: space-between;
       align-items: center; font-size: 14px;
     }
@@ -280,7 +280,7 @@
       </div>
     </div>
 
-    <!-- MET Invoer (Onderste rij = 3 gelijke vakken) -->
+    <!-- MET Invoer -->
     <div class="card" id="inputCard">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">Activiteit Toevoegen</h3>
@@ -407,15 +407,35 @@
   
   let currentUser = null;
 
+  // NIEUWE, UITGEBREIDE LIJST MET ACTIVITEITEN
   const defaultPresets = [
     { name: "Slapen", met: 1.0, fav: false },
     { name: "Rustig zitten / Eten", met: 1.0, fav: true },
+    { name: "Tv kijken / Kaarten", met: 1.5, fav: false },
+    { name: "Wassen / Aankleden", met: 1.5, fav: true },
     { name: "Wagen besturen", met: 2.0, fav: true },
+    { name: "Koken / Licht huishoudelijk werk", met: 2.0, fav: false },
+    { name: "Licht bureauwerk", met: 2.0, fav: false },
+    { name: "Wandelen (2,5 km/u)", met: 2.0, fav: false },
+    { name: "Stofzuigen / Boodschappen doen", met: 3.0, fav: false },
     { name: "Wandelen (3-4 km/u)", met: 3.0, fav: true },
-    { name: "Fietsen (10 km/u)", met: 4.0, fav: true }
+    { name: "Fietsen (8 km/u)", met: 3.0, fav: false },
+    { name: "Douchen", met: 4.0, fav: true },
+    { name: "Trappen afdalen", met: 4.0, fav: false },
+    { name: "Fietsen (10 km/u)", met: 4.0, fav: true },
+    { name: "Wandelen (5 km/u)", met: 4.0, fav: false },
+    { name: "Boodschappen doen (zware tas)", met: 5.0, fav: false },
+    { name: "Fietsen (12 km/u)", met: 5.0, fav: false },
+    { name: "Wandelen (5,5 km/u)", met: 5.0, fav: false },
+    { name: "Trappen oplopen", met: 6.0, fav: false },
+    { name: "Fietsen (15 km/u)", met: 7.0, fav: false },
+    { name: "Wandelen (7,5 km/u)", met: 7.0, fav: false },
+    { name: "Joggen (8 km/u)", met: 8.0, fav: false },
+    { name: "Hardlopen (10 km/u)", met: 11.0, fav: false },
+    { name: "Fietsen (25 km/u)", met: 12.0, fav: false }
   ];
 
-  let trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
+  let trackerData = { energyLogs: {}, activities: [], customDb: [] };
   let currentDate = new Date().toISOString().split('T')[0];
   document.getElementById('selectedDate').value = currentDate;
   let chartEndDate = new Date().toISOString().split('T')[0];
@@ -457,15 +477,31 @@
         const doc = await db.collection('users').doc(user.uid).get();
         if (doc.exists) {
           trackerData = doc.data();
-          if (!trackerData.customDb || trackerData.customDb.length < 5) trackerData.customDb = defaultPresets;
+          if (!trackerData.customDb) trackerData.customDb = [];
+          
+          // Voeg eventueel ontbrekende nieuwe standaard presets toe aan bestaande lijst
+          defaultPresets.forEach(preset => {
+            if (!trackerData.customDb.some(dbItem => dbItem.name === preset.name)) {
+              trackerData.customDb.push(preset);
+            }
+          });
+
           if (!trackerData.energyLogs) trackerData.energyLogs = {};
         } else {
           let local = localStorage.getItem('metTrackerData');
           if (local) {
             trackerData = JSON.parse(local);
+            
+            if (!trackerData.customDb) trackerData.customDb = [];
+            defaultPresets.forEach(preset => {
+              if (!trackerData.customDb.some(dbItem => dbItem.name === preset.name)) {
+                trackerData.customDb.push(preset);
+              }
+            });
+
             await db.collection('users').doc(user.uid).set(trackerData);
           } else {
-            trackerData = { energyLogs: {}, activities: [], customDb: defaultPresets };
+            trackerData = { energyLogs: {}, activities: [], customDb: [...defaultPresets] };
           }
         }
       } catch (e) { console.error(e); }
@@ -512,7 +548,7 @@
       btn = document.getElementById('btnSaveAvond');
     }
     saveData();
-    // Verberg de knop als deze is opgeslagen
+    // Verberg de knop als deze is opgeslagen, zonder extra tekst
     if (btn) {
       btn.style.display = 'none';
     }
@@ -619,7 +655,7 @@
       updateMeta(type, val); 
       
       const btn = document.getElementById('btnSave' + type);
-      // Controleer of de waarde al was opgeslagen; zo ja, verberg de knop
+      // Controleer of de waarde al was opgeslagen; zo ja, verberg de knop volledig
       if (savedVal !== undefined && btn) {
         btn.style.display = 'none';
       }
