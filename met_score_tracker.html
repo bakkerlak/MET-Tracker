@@ -22,7 +22,6 @@
       --bg-color: #f2f2f7;
       --card-bg: #ffffff;
       --primary: #007aff;
-      --primary-hover: #005bb5;
       --text-main: #1c1c1e;
       --text-muted: #8e8e93;
       --border: #e5e5ea;
@@ -61,7 +60,6 @@
 
     label { display: block; font-weight: 500; font-size: 13px; color: var(--text-muted); }
 
-    /* Invoervelden */
     input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
       width: 100%;
       height: 44px;
@@ -92,7 +90,7 @@
       padding: 12px 20px;
       font-size: 15px;
       cursor: pointer;
-      transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
       box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
     }
 
@@ -105,13 +103,13 @@
     .date-nav button { width: 44px; height: 44px; padding: 0; font-size: 16px; border-radius: 12px; background-color: #e5e5ea; color: var(--text-main); box-shadow: none; }
     
     .date-picker-wrapper {
-      position: relative; flex-grow: 1; height: 44px; background-color: #f2f2f7;
+      position: relative; flex-grow: 1; height: 44px; background-color: var(--bg-color);
       border-radius: 12px; display: flex; align-items: center; justify-content: center;
       font-size: 15px; font-weight: 600; color: var(--primary); text-align: center;
     }
     .date-picker-wrapper input[type="date"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; padding: 0; }
 
-    /* Gecombineerd blok voor de energie sliders */
+    /* Energie Kaarten */
     .energy-wrapper {
       background: #fafafa;
       border: 1px solid var(--border);
@@ -136,7 +134,7 @@
     .energy-row-2 { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
     .energy-meta { font-weight: 600; font-size: 13px; }
 
-    /* Slankere Sliders */
+    /* Sliders */
     input[type="range"] {
       -webkit-appearance: none;
       flex-grow: 1;
@@ -157,24 +155,37 @@
       cursor: pointer;
     }
 
-    /* ÉÉN enkel grid voor perfecte verticale uitlijning */
-    .form-grid { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr 1fr; 
-      gap: 12px; 
-      margin-top: 12px; 
-      margin-bottom: 12px; 
-    }
+    /* Strak Grid Invoervelden */
+    /* Zorgt ervoor dat de breedtes exact matchen: 2 kolommen voor de naam = 2 losse kolommen voor uren/minuten */
+    .form-grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
+    .form-grid-bottom { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px; }
+    .time-dur-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } /* Uren en Minuten splitsen in het 2e deel */
+    
     .compact-field { display: flex; flex-direction: column; width: 100%; }
     .compact-field label { font-size: 12px; margin-bottom: 6px; white-space: nowrap; }
     .compact-field input { padding-left: 8px; padding-right: 8px; text-align: center; }
     #actName { text-align: left; padding-left: 12px; }
 
+    /* Compact & Lichtgrijs Logboek */
+    .logbook-wrapper {
+      background: var(--bg-color); /* Lichtgrijze achtergrond */
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
     .entry {
-      background: #fafafa; border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between;
+      background: transparent; 
+      border-bottom: 1px solid var(--border); 
+      padding: 12px; 
+      display: flex; justify-content: space-between;
       align-items: center; font-size: 14px;
     }
+    
+    .entry:last-child {
+      border-bottom: none;
+    }
+
     .badge { background: #e1f0ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; }
     
     .chart-container { position: relative; height: 260px; width: 100%; margin-top: 10px; }
@@ -269,7 +280,7 @@
       </div>
     </div>
 
-    <!-- MET Invoer (Nu 100% uitgelijnd dankzij single grid) -->
+    <!-- MET Invoer (Grid Update) -->
     <div class="card" id="inputCard">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0;">Activiteit Toevoegen</h3>
@@ -278,30 +289,35 @@
       
       <select id="presetSelect" onchange="selectPreset()"></select>
       
-      <div class="form-grid">
-        <div class="compact-field" style="grid-column: span 2;">
+      <div class="form-grid-top">
+        <div class="compact-field">
           <label>Activiteit Naam</label>
           <input type="text" id="actName" placeholder="Bijv. Wandelen">
         </div>
-        <div class="compact-field" style="grid-column: span 1;">
+        <div class="compact-field">
           <label>MET-score</label>
           <input type="number" id="metVal" step="0.1" placeholder="2.5">
         </div>
-        <div class="compact-field" style="grid-column: span 1;">
+      </div>
+      
+      <div class="form-grid-bottom">
+        <div class="compact-field">
           <label>Starttijd</label>
           <input type="time" id="startTime">
         </div>
-        <div class="compact-field" style="grid-column: span 1;">
-          <label>Uren</label>
-          <input type="number" id="durHours" min="0" max="24" placeholder="0u">
-        </div>
-        <div class="compact-field" style="grid-column: span 1;">
-          <label>Minuten</label>
-          <input type="number" id="durMins" min="0" max="59" placeholder="30m">
+        <div class="time-dur-wrapper">
+          <div class="compact-field">
+            <label>Uren</label>
+            <input type="number" id="durHours" min="0" max="24" placeholder="0u">
+          </div>
+          <div class="compact-field">
+            <label>Minuten</label>
+            <input type="number" id="durMins" min="0" max="59" placeholder="30m">
+          </div>
         </div>
       </div>
       
-      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%;">Activiteit Opslaan</button>
+      <button id="saveActBtn" onclick="addOrUpdateActivity()" style="width: 100%; margin-top: 16px;">Activiteit Opslaan</button>
     </div>
 
     <!-- Logboek -->
@@ -314,9 +330,10 @@
         <button onclick="openCopyModal()" class="btn-secondary btn-small" style="font-size: 12px;">📄 Kopieer Dag</button>
       </div>
       
-      <div id="logList"></div>
+      <!-- Compact Logboek Container -->
+      <div id="logList" class="logbook-wrapper"></div>
       
-      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+      <div style="margin-top: 16px; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 15px; font-weight: 600;">Totaal MET-punten:</span>
         <span id="totalMET" style="font-size: 18px; font-weight: 700; color: var(--primary);">0</span>
       </div>
@@ -611,9 +628,13 @@
     const dayActs = trackerData.activities.filter(a => a.date === currentDate).sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
     if (dayActs.length === 0) {
-      list.innerHTML = `<i style="color: var(--text-muted); font-size: 14px;">Geen activiteiten vandaag.</i>`;
+      list.innerHTML = `<div style="padding: 16px; color: var(--text-muted); font-size: 14px;">Geen activiteiten vandaag.</div>`;
+      list.style.border = "none";
+      list.style.background = "transparent";
       document.getElementById('totalMET').innerText = '0';
     } else {
+      list.style.border = "1px solid var(--border)";
+      list.style.background = "var(--bg-color)";
       let html = ''; let total = 0;
       dayActs.forEach(a => {
         total += a.points;
