@@ -50,7 +50,7 @@
 
     .card {
       background: var(--card-bg);
-      border-radius: 0; /* Strakke hoeken */
+      border-radius: 0; 
       padding: 16px 20px;
       margin-bottom: 16px;
       box-shadow: var(--shadow);
@@ -70,7 +70,7 @@
       padding: 0 12px;
       margin: 0;
       border: 1px solid var(--border);
-      border-radius: 0; /* Strakke hoeken */
+      border-radius: 0; 
       background-color: #fafafa;
       box-sizing: border-box;
       font-size: 15px;
@@ -90,7 +90,7 @@
       color: white;
       font-weight: 600;
       border: none;
-      border-radius: 0; /* Strakke hoeken */
+      border-radius: 0; 
       padding: 12px 20px;
       font-size: 15px;
       cursor: pointer;
@@ -144,7 +144,7 @@
       flex-grow: 1;
       height: 6px;
       background: linear-gradient(to right, #ff3b30, #ffcc00, #34c759);
-      border-radius: 0; /* Strakke balk */
+      border-radius: 0; 
       outline: none;
       margin: 0;
     }
@@ -154,7 +154,7 @@
       height: 24px;
       background: #ffffff;
       border: 1px solid var(--border);
-      border-radius: 0; /* Strak blokje in plaats van een bolletje */
+      border-radius: 0; 
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       cursor: pointer;
     }
@@ -722,10 +722,31 @@
     const canvas = document.getElementById('historyChart');
     const ctx = canvas.getContext('2d');
     
-    let barGradient = ctx.createLinearGradient(0, 0, 0, 260);
-    barGradient.addColorStop(0, 'rgba(52, 199, 89, 0.85)');
-    barGradient.addColorStop(0.5, 'rgba(255, 204, 0, 0.85)');
-    barGradient.addColorStop(1, 'rgba(255, 59, 48, 0.85)');
+    // Bereken het dynamische kleurschema per staaf
+    let maxMet = Math.max(...metData);
+    if (maxMet < 10) maxMet = 10; // Zorgt ervoor dat een hele rustige dag (bijv. 2 ptn) niet knalrood is
+
+    let barColors = metData.map(val => {
+      if (val === 0) return 'rgba(220, 220, 224, 0.5)'; // Lichtgrijs als er niks is
+      
+      let ratio = val / maxMet; // Bereken positie tussen 0.0 (laag) en 1.0 (hoog)
+      let r, g, b;
+      
+      if (ratio < 0.5) {
+        // Interpoleer van Groen (52, 199, 89) naar Geel (255, 204, 0)
+        let p = ratio / 0.5;
+        r = 52 + (255 - 52) * p;
+        g = 199 + (204 - 199) * p;
+        b = 89 + (0 - 89) * p;
+      } else {
+        // Interpoleer van Geel (255, 204, 0) naar Rood (255, 59, 48)
+        let p = (ratio - 0.5) / 0.5;
+        r = 255 + (255 - 255) * p; // Blijft 255
+        g = 204 + (59 - 204) * p;
+        b = 0 + (48 - 0) * p;
+      }
+      return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, 0.85)`;
+    });
 
     if (historyChart) historyChart.destroy();
     
@@ -736,7 +757,8 @@
         datasets: [
           { type: 'line', label: '🌅 Ochtend', data: ochtendData, borderColor: '#34c759', backgroundColor: '#ffffff', borderWidth: 3, tension: 0.4, yAxisID: 'yEnergy', spanGaps: true, pointRadius: 4, pointBorderWidth: 2 },
           { type: 'line', label: '🌙 Avond', data: avondData, borderColor: '#007aff', backgroundColor: '#ffffff', borderWidth: 3, tension: 0.4, yAxisID: 'yEnergy', spanGaps: true, pointRadius: 4, pointBorderWidth: 2 },
-          { type: 'bar', label: '⚡ MET-Ptn', data: metData, backgroundColor: barGradient, borderRadius: 0, borderSkipped: false, barPercentage: 0.6, yAxisID: 'yMET' }
+          // Gebruik de array met dynamisch berekende kleuren per staaf:
+          { type: 'bar', label: '⚡ MET-Ptn', data: metData, backgroundColor: barColors, borderRadius: 0, borderSkipped: false, barPercentage: 0.6, yAxisID: 'yMET' }
         ]
       },
       options: {
